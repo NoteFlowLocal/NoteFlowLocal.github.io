@@ -34,71 +34,26 @@
             --sidebar-width: 260px;
             --editor-bg: #ffffff;
             --code-bg: #f7f7f5;
+            --status-bar-height: 30px;
         }
 
         /* Predefined Themes */
         [data-theme="dark"] {
-            --bg-primary: #1e1e1e;
-            --bg-secondary: #2d2d2d;
-            --bg-hover: #3a3a3a;
-            --text-primary: #e0e0e0;
+            --bg-primary: #191919;
+            --bg-secondary: #202020;
+            --bg-hover: #2c2c2c;
+            --text-primary: #d4d4d4;
             --text-secondary: #a0a0a0;
-            --border: #404040;
-            --accent: #4a9eff;
-            --editor-bg: #1e1e1e;
+            --border: #333333;
+            --accent: #3794ff;
+            --editor-bg: #191919;
             --code-bg: #2d2d2d;
         }
-
-        [data-theme="sepia"] {
-            --bg-primary: #f4ecd8;
-            --bg-secondary: #ede0c8;
-            --bg-hover: #e6d4b1;
-            --text-primary: #5c4b37;
-            --text-secondary: #8b7355;
-            --border: #d4c4a8;
-            --accent: #b8860b;
-            --editor-bg: #f4ecd8;
-            --code-bg: #ede0c8;
-        }
-
-        [data-theme="forest"] {
-            --bg-primary: #1a2f1a;
-            --bg-secondary: #243524;
-            --bg-hover: #2e422e;
-            --text-primary: #c9d4c9;
-            --text-secondary: #8fa68f;
-            --border: #3a4f3a;
-            --accent: #4caf50;
-            --editor-bg: #1a2f1a;
-            --code-bg: #243524;
-        }
-
-        [data-theme="ocean"] {
-            --bg-primary: #0a1929;
-            --bg-secondary: #132337;
-            --bg-hover: #1c2f45;
-            --text-primary: #b8cfe5;
-            --text-secondary: #7a92aa;
-            --border: #2a3f56;
-            --accent: #00bcd4;
-            --editor-bg: #0a1929;
-            --code-bg: #132337;
-        }
-
-        [data-theme="sunset"] {
-            --bg-primary: #2b1b3d;
-            --bg-secondary: #3a2750;
-            --bg-hover: #4a3460;
-            --text-primary: #f4b8c2;
-            --text-secondary: #c08a96;
-            --border: #4a3460;
-            --accent: #ff6b9d;
-            --editor-bg: #2b1b3d;
-            --code-bg: #3a2750;
-        }
+        
+        /* ... existing themes ... */
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
@@ -109,6 +64,241 @@
         .app-container {
             display: flex;
             height: 100vh;
+            width: 100vw;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease, transform 0.3s ease;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            transform: translateX(-100%);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .app-title {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-search {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+        }
+        
+        .search-input:focus {
+            border-color: var(--accent);
+        }
+
+        .pages-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .page-item {
+            padding: 6px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            user-select: none;
+            margin: 0 8px;
+            border-radius: 4px;
+        }
+
+        .page-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .page-item.active {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .page-item-icons {
+            margin-left: auto;
+            display: none;
+            gap: 8px;
+            opacity: 0.6;
+        }
+
+        .page-item:hover .page-item-icons {
+            display: flex;
+        }
+        
+        .page-item-icons i:hover {
+            color: var(--text-primary);
+            opacity: 1;
+        }
+
+        .new-page-btn {
+            margin: 16px;
+            padding: 8px;
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .new-page-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--bg-hover);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--editor-bg);
+            position: relative;
+            min-width: 0; /* Prevent flex overflow */
+        }
+
+        .toolbar {
+            padding: 12px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: var(--bg-primary);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .toolbar-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        .word-count-display {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 4px 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .editor-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px 60px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-title-input {
+            width: 100%;
+            border: none;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: transparent;
+            color: var(--text-primary);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .page-title-input::placeholder {
+            color: var(--border);
+        }
+
+        .editor {
+            outline: none;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 300px;
+            color: var(--text-primary);
+        }
+        
+        .editor p { margin-bottom: 1em; }
+        .editor h1, .editor h2, .editor h3 { margin-top: 1.5em; margin-bottom: 0.5em; font-weight: 600; }
+        .editor ul, .editor ol { margin-left: 1.5em; margin-bottom: 1em; }
+        .editor blockquote { border-left: 3px solid var(--border); padding-left: 1em; color: var(--text-secondary); }
+        .editor pre { background: var(--code-bg); padding: 12px; border-radius: 4px; overflow-x: auto; font-family: monospace; }
+
+        /* Status Bar */
+        .status-bar {
+            height: var(--status-bar-height);
+            border-top: 1px solid var(--border);
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            user-select: none;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         /* Theme Switcher Button */
@@ -538,11 +728,20 @@
 
         .toolbar-separator {
             width: 1px;
-            height: 20px;
+            height: 24px;
             background: var(--border);
+            margin: 0 4px;
         }
 
-        /* Editor Area */
+        .word-count-display {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 4px 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
         .editor-container {
             flex: 1;
             overflow-y: auto;
@@ -808,6 +1007,55 @@
             display: block;
         }
 
+        /* Link Tooltip */
+        .link-tooltip {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .link-tooltip.active {
+            display: flex;
+        }
+
+        .link-tooltip a {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 13px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .link-tooltip a:hover {
+            text-decoration: underline;
+        }
+
+        .link-tooltip button {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .link-tooltip button:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
         @keyframes slideUp {
             from {
                 transform: translate(-50%, 100%);
@@ -825,25 +1073,21 @@
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="workspace-name">
-                    <i class="fas fa-cube"></i>
-                    <span>My Workspace</span>
+                <div class="app-title">
+                    <i class="fas fa-layer-group" style="color: var(--accent);"></i>
+                    <span>NoteFlow</span>
                 </div>
             </div>
             
-            <div class="sidebar-content">
-                <div class="sidebar-section">
-                    <div class="section-title">
-                        <span>Pages</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div id="pagesList"></div>
-                    <button class="add-page-btn" onclick="createNewPage()">
-                        <i class="fas fa-plus"></i>
-                        <span>Add a page</span>
-                    </button>
-                </div>
+            <div class="sidebar-search">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search pages..." oninput="filterPages()">
             </div>
+            
+            <div class="pages-list" id="pagesList"></div>
+            
+            <button class="new-page-btn" onclick="createNewPage()">
+                <i class="fas fa-plus"></i> New Page
+            </button>
         </div>
 
         <!-- Main Content -->
@@ -892,12 +1136,25 @@
                 <button class="toolbar-btn" onclick="formatBlock('pre')">
                     <i class="fas fa-code"></i>
                 </button>
+                
+                <div class="toolbar-separator"></div>
+                
+                <div class="word-count-display" id="wordCountDisplay">
+                    0 words
+                </div>
             </div>
 
             <!-- Editor -->
             <div class="editor-container">
-                <input type="text" class="page-title" id="pageTitle" placeholder="Untitled" />
+                <input type="text" class="page-title-input" id="pageTitle" placeholder="Untitled" />
                 <div class="editor" id="editor" contenteditable="true" placeholder="Start typing..."></div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-item" id="saveStatus">
+                    <i class="fas fa-check-circle"></i> Saved
+                </div>
             </div>
         </div>
     </div>
@@ -1075,6 +1332,40 @@
         </div>
     </div>
 
+    <!-- Modal for Google Drive Settings -->
+    <div class="modal" id="driveSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Google Drive Settings</h3>
+            </div>
+            <div class="modal-body">
+                <div class="info-box" style="background: var(--bg-secondary); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; color: var(--text-secondary); border: 1px solid var(--border);">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px; color: var(--text-primary); font-weight: 500; align-items: center;">
+                        <i class="fas fa-info-circle" style="color: var(--accent);"></i>
+                        <span>Why do I need this?</span>
+                    </div>
+                    <p style="line-height: 1.4;">NoteFlow is a privacy-first, local-only app. We don't have servers to store your data. To sync across devices, you use your <strong>own</strong> Google Drive, ensuring you maintain 100% ownership and control of your data.</p>
+                </div>
+
+                <p style="margin-bottom: 15px; font-size: 14px; color: var(--text-secondary);">
+                    Enter your Google Cloud credentials to enable Drive backup.
+                </p>
+                <div style="margin-bottom: 10px;">
+                    <label style="display:block; margin-bottom:5px; font-size:13px;">Client ID</label>
+                    <input type="text" class="modal-input" id="driveClientId" placeholder="Enter Client ID" />
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label style="display:block; margin-bottom:5px; font-size:13px;">API Key</label>
+                    <input type="text" class="modal-input" id="driveApiKey" placeholder="Enter API Key" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('driveSettingsModal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDriveSettings()">Save & Connect</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Hidden file input -->
     <input type="file" id="fileInput" style="display: none;" accept=".json,.txt,.html" />
@@ -1082,10 +1373,18 @@
     <!-- Toast notification -->
     <div class="toast" id="toast"></div>
 
+    <!-- Link Tooltip -->
+    <div class="link-tooltip" id="linkTooltip">
+        <a href="#" target="_blank" id="linkTooltipUrl">Open Link</a>
+        <div style="width: 1px; height: 16px; background: var(--border); margin: 0 4px;"></div>
+        <button onclick="editLink()" title="Edit Link"><i class="fas fa-pencil-alt"></i></button>
+        <button onclick="removeLink()" title="Remove Link"><i class="fas fa-unlink"></i></button>
+    </div>
+
     <script>
         // Google Drive API Configuration
-        const CLIENT_ID = 'YOUR_CLIENT_ID'; // Replace with your Google Client ID
-        const API_KEY = 'YOUR_API_KEY'; // Replace with your Google API Key
+        let CLIENT_ID = '';
+        let API_KEY = '';
         const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
@@ -1188,13 +1487,27 @@
             }
             
             renderPagesList();
+            initLinkTooltip();
             
             // Auto-save every 30 seconds
             setInterval(autoSave, 30000);
             
             // Save on input
-            document.getElementById('pageTitle').addEventListener('input', debounce(savePage, 1000));
-            document.getElementById('editor').addEventListener('input', debounce(savePage, 1000));
+            const debouncedSave = debounce(savePage, 1000);
+            document.getElementById('pageTitle').addEventListener('input', debouncedSave);
+            
+            // Optimize editor input handling
+            const editor = document.getElementById('editor');
+            editor.addEventListener('input', () => {
+                updateWordCount();
+                debouncedSave();
+            });
+            
+            // Also update word count on keyup for better responsiveness
+            editor.addEventListener('keyup', updateWordCount);
+            
+            // Initial word count update
+            updateWordCount();
         }
 
         // Theme Management Functions
@@ -1523,11 +1836,15 @@
                 document.querySelectorAll('.page-item').forEach(item => {
                     item.classList.toggle('active', item.dataset.pageId === pageId);
                 });
+                
+                updateWordCount();
             }
         }
 
         function savePage() {
             if (!currentPageId) return;
+            
+            updateSaveStatus('saving');
             
             const page = pages.find(p => p.id === currentPageId);
             if (page) {
@@ -1542,6 +1859,8 @@
                 // A soft-render to update title in sidebar without full redraw
                 const pageItemSpan = document.querySelector(`.page-item[data-page-id="${currentPageId}"] span`);
                 if (pageItemSpan) pageItemSpan.textContent = titleInput;
+                
+                setTimeout(() => updateSaveStatus('saved'), 800);
             }
         }
 
@@ -1595,6 +1914,11 @@
                 }
             });
 
+            // --- DRAG AND DROP LOGIC ---
+            let dragPageId = null;
+            let dropTargetPageId = null;
+            let dropPosition = null; // 'inside' or 'after'
+
             // Recursive function to render page tree
             function renderTree(pageId, depth) {
                 const page = pageMap.get(pageId);
@@ -1618,7 +1942,52 @@
                 pageItem.classList.toggle('active', page.id === currentPageId);
                 pageItem.style.paddingLeft = (12 + depth * 20) + 'px';
                 pageItem.onclick = () => loadPage(page.id);
-                
+                pageItem.draggable = true;
+
+                // Drag events
+                pageItem.addEventListener('dragstart', function(e) {
+                    dragPageId = page.id;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', page.id);
+                    setTimeout(() => pageItem.classList.add('dragging'), 0);
+                });
+                pageItem.addEventListener('dragend', function(e) {
+                    dragPageId = null;
+                    dropTargetPageId = null;
+                    dropPosition = null;
+                    document.querySelectorAll('.page-item').forEach(item => {
+                        item.classList.remove('drop-inside', 'drop-after');
+                    });
+                });
+                pageItem.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    if (dragPageId && dragPageId !== page.id) {
+                        // Allow drop inside or after
+                        const rect = pageItem.getBoundingClientRect();
+                        const offset = e.clientY - rect.top;
+                        if (offset < rect.height / 2) {
+                            pageItem.classList.add('drop-after');
+                            pageItem.classList.remove('drop-inside');
+                            dropPosition = 'after';
+                        } else {
+                            pageItem.classList.add('drop-inside');
+                            pageItem.classList.remove('drop-after');
+                            dropPosition = 'inside';
+                        }
+                        dropTargetPageId = page.id;
+                    }
+                });
+                pageItem.addEventListener('dragleave', function(e) {
+                    pageItem.classList.remove('drop-inside', 'drop-after');
+                });
+                pageItem.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    pageItem.classList.remove('drop-inside', 'drop-after');
+                    if (dragPageId && dragPageId !== page.id) {
+                        handlePageDrop(dragPageId, page.id, dropPosition);
+                    }
+                });
+
                 const collapseIcon = hasChildren 
                     ? `<i class="fas ${page.collapsed ? 'fa-chevron-right' : 'fa-chevron-down'}" style="width:14px; text-align:center; cursor:pointer;" onclick="event.stopPropagation(); toggleCollapse('${page.id}')"></i>`
                     : `<i class="fas fa-file-alt" style="width:14px; text-align:center;"></i>`;
@@ -1642,9 +2011,43 @@
                     childrenMap.get(page.id).forEach(childId => renderTree(childId, depth + 1));
                 }
             }
-            
             // Start rendering from top-level pages
             sorted.filter(p => !p.title.includes('::')).forEach(page => renderTree(page.id, 0));
+        }
+
+        // Handle drop logic for nesting and un-nesting
+        function handlePageDrop(dragId, targetId, position) {
+            if (dragId === targetId) return;
+            const dragPage = pages.find(p => p.id === dragId);
+            const targetPage = pages.find(p => p.id === targetId);
+            if (!dragPage || !targetPage) return;
+
+            // Remove dragPage from its current location
+            const oldTitle = dragPage.title;
+            let newTitle;
+            if (position === 'inside') {
+                // Make dragPage a child of targetPage
+                newTitle = targetPage.title + '::' + oldTitle.split('::').pop();
+            } else if (position === 'after') {
+                // Make dragPage a sibling after targetPage (same parent as targetPage)
+                const targetParts = targetPage.title.split('::');
+                const parentTitle = targetParts.slice(0, -1).join('::');
+                newTitle = parentTitle ? parentTitle + '::' + oldTitle.split('::').pop() : oldTitle.split('::').pop();
+            }
+            // Prevent circular nesting
+            if (newTitle && (dragPage.title !== newTitle) && !newTitle.startsWith(dragPage.title + '::')) {
+                // Update dragPage and all its children
+                const oldPrefix = dragPage.title + '::';
+                const newPrefix = newTitle + '::';
+                dragPage.title = newTitle;
+                pages.forEach(p => {
+                    if (p.id !== dragPage.id && p.title.startsWith(oldPrefix)) {
+                        p.title = p.title.replace(oldPrefix, newPrefix);
+                    }
+                });
+                savePagesToLocal();
+                renderPagesList();
+            }
         }
 
         // Local Storage Functions
@@ -1724,6 +2127,21 @@
 
         // Google Drive Functions (requires credentials)
         function initGoogleDrive() {
+            const storedSettings = localStorage.getItem('noteflow_drive_settings');
+            if (storedSettings) {
+                const settings = JSON.parse(storedSettings);
+                CLIENT_ID = settings.clientId;
+                API_KEY = settings.apiKey;
+                
+                if (CLIENT_ID && API_KEY) {
+                    loadGapi();
+                }
+            }
+        }
+
+        function loadGapi() {
+            if (typeof gapi === 'undefined') return;
+            
             gapi.load('client:auth2', () => {
                 gapi.client.init({
                     apiKey: API_KEY,
@@ -1733,6 +2151,9 @@
                 }).then(() => {
                     gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
                     updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+                }, (error) => {
+                    console.error('Error initializing Google Drive API', error);
+                    showToast('Error connecting to Google Drive');
                 });
             });
         }
@@ -1742,10 +2163,44 @@
         }
 
         function saveToGoogleDrive() {
+            if (!CLIENT_ID || !API_KEY) {
+                document.getElementById('driveSettingsModal').classList.add('active');
+                const storedSettings = localStorage.getItem('noteflow_drive_settings');
+                if (storedSettings) {
+                    const settings = JSON.parse(storedSettings);
+                    document.getElementById('driveClientId').value = settings.clientId || '';
+                    document.getElementById('driveApiKey').value = settings.apiKey || '';
+                }
+                return;
+            }
+
             if (!isGoogleSignedIn) {
-                gapi.auth2.getAuthInstance().signIn().then(uploadToDrive, () => showToast('Google Sign-In failed.'));
+                gapi.auth2.getAuthInstance().signIn().then(uploadToDrive, (error) => {
+                    showToast('Google Sign-In failed: ' + error.error);
+                });
             } else {
                 uploadToDrive();
+            }
+        }
+        
+        function saveDriveSettings() {
+            const clientId = document.getElementById('driveClientId').value.trim();
+            const apiKey = document.getElementById('driveApiKey').value.trim();
+            
+            if (clientId && apiKey) {
+                localStorage.setItem('noteflow_drive_settings', JSON.stringify({
+                    clientId,
+                    apiKey
+                }));
+                
+                CLIENT_ID = clientId;
+                API_KEY = apiKey;
+                
+                closeModal('driveSettingsModal');
+                loadGapi();
+                showToast('Settings saved! Connecting...');
+            } else {
+                showToast('Please enter both Client ID and API Key');
             }
         }
 
@@ -1790,6 +2245,13 @@
             const url = prompt('Enter URL:');
             if (url) {
                 document.execCommand('createLink', false, url);
+                const selection = window.getSelection();
+                if (selection.rangeCount) {
+                    const node = selection.anchorNode;
+                    const element = node.nodeType === 3 ? node.parentElement : node;
+                    const link = element.closest('a');
+                    if (link) showLinkTooltip(link);
+                }
                 document.getElementById('editor').focus();
             }
         }
@@ -1806,6 +2268,9 @@
                 document.getElementById('renamePageName').value = '';
                 pageToRenameId = null;
             }
+            if (modalId === 'driveSettingsModal') {
+                // Optional: clear inputs or leave them for convenience
+            }
         }
 
         function showToast(message) {
@@ -1815,32 +2280,134 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // Utility Functions
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
+        // New Features Functions
+        function filterPages() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const pageItems = document.querySelectorAll('.page-item');
+            
+            pageItems.forEach(item => {
+                const title = item.querySelector('span').textContent.toLowerCase();
+                if (title.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
 
-        // Event Listeners
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveToLocal(); }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); createNewPage(); }
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 't') { e.preventDefault(); toggleThemePanel(); }
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal.active, .theme-panel.active').forEach(el => el.classList.remove('active'));
+        function updateWordCount() {
+            const text = document.getElementById('editor').innerText || '';
+            // Optimized word count using regex match which is faster than split for large text
+            const matches = text.match(/\S+/g);
+            const count = matches ? matches.length : 0;
+            const display = document.getElementById('wordCountDisplay');
+            if (display) display.textContent = `${count} words`;
+        }
+
+        function updateSaveStatus(status) {
+            const el = document.getElementById('saveStatus');
+            if (!el) return;
+            
+            if (status === 'saving') {
+                el.innerHTML = '<i class="fas fa-sync fa-spin"></i> Saving...';
+            } else {
+                el.innerHTML = '<i class="fas fa-check-circle"></i> Saved';
             }
+        }
+
+        // Link Tooltip Functions
+        let currentLinkElement = null;
+
+        function initLinkTooltip() {
+            const editor = document.getElementById('editor');
+            const tooltip = document.getElementById('linkTooltip');
+
+            // Handle clicks
+            document.addEventListener('click', (e) => {
+                if (tooltip.contains(e.target)) return; // Clicked inside tooltip
+
+                if (e.target.tagName === 'A' && editor.contains(e.target)) {
+                    showLinkTooltip(e.target);
+                } else {
+                    tooltip.classList.remove('active');
+                }
+            });
+
+            // Handle keyboard navigation
+            editor.addEventListener('keyup', (e) => {
+                const selection = window.getSelection();
+                if (selection.rangeCount) {
+                    const node = selection.anchorNode;
+                    const element = node.nodeType === 3 ? node.parentElement : node;
+                    const link = element.closest('a');
+                    
+                    if (link && editor.contains(link)) {
+                        showLinkTooltip(link);
+                    } else {
+                        tooltip.classList.remove('active');
+                    }
+                }
+            });
+            
+            // Hide on scroll
+            editor.addEventListener('scroll', () => {
+                tooltip.classList.remove('active');
+            });
+        }
+
+        function showLinkTooltip(link) {
+            currentLinkElement = link;
+            const tooltip = document.getElementById('linkTooltip');
+            const urlLink = document.getElementById('linkTooltipUrl');
+            
+            urlLink.href = link.href;
+            urlLink.textContent = link.href;
+            
+            const rect = link.getBoundingClientRect();
+            tooltip.style.top = `${rect.bottom + 5}px`; // Fixed positioning relative to viewport
+            tooltip.style.left = `${rect.left}px`;
+            
+            // Ensure tooltip doesn't go off screen
+            const tooltipRect = tooltip.getBoundingClientRect();
+            if (tooltipRect.right > window.innerWidth) {
+                tooltip.style.left = `${window.innerWidth - tooltipRect.width - 20}px`;
+            }
+            
+            tooltip.classList.add('active');
+        }
+
+        function editLink() {
+            if (currentLinkElement) {
+                const newUrl = prompt('Edit URL:', currentLinkElement.href);
+                if (newUrl) {
+                    currentLinkElement.href = newUrl;
+                    document.getElementById('linkTooltipUrl').href = newUrl;
+                    document.getElementById('linkTooltipUrl').textContent = newUrl;
+                    savePage(); // Save changes
+                }
+            }
+        }
+
+        function removeLink() {
+            if (currentLinkElement) {
+                const parent = currentLinkElement.parentNode;
+                while (currentLinkElement.firstChild) {
+                    parent.insertBefore(currentLinkElement.firstChild, currentLinkElement);
+                }
+                parent.removeChild(currentLinkElement);
+                document.getElementById('linkTooltip').classList.remove('active');
+                savePage(); // Save changes
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+           
+            initGoogleDrive();
+       
         });
 
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modal.id); });
-        });
+        window.addEventListener('beforeunload', savePage);
 
         document.addEventListener('click', (e) => {
             const themePanel = document.getElementById('themePanel');
@@ -1849,15 +2416,8 @@
                 themePanel.classList.remove('active');
             }
         });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initApp();
-            // Uncomment the next line when you have Google API credentials
-            // initGoogleDrive();
-        });
-
-        window.addEventListener('beforeunload', savePage);
     </script>
 
 </body>
 </html>
+
