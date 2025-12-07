@@ -4639,6 +4639,8 @@
 
         function deletePage(pageId) {
             const pageToDelete = pages.find(p => p.id === pageId);
+            if (!pageToDelete) return;
+            
             if (confirm(`Are you sure you want to delete "${pageToDelete.title}" and all its sub-pages?`)) {
                 const prefix = pageToDelete.title + '::';
                 const idsToDelete = new Set([pageId]);
@@ -4648,12 +4650,20 @@
                     }
                 });
 
+                // Clear favorite if deleting a favorited page
+                const favoritePageId = localStorage.getItem('noteflow_favorite_page');
+                if (favoritePageId && idsToDelete.has(favoritePageId)) {
+                    localStorage.removeItem('noteflow_favorite_page');
+                }
+
                 pages = pages.filter(p => !idsToDelete.has(p.id));
                 savePagesToLocal();
                 
                 if (idsToDelete.has(currentPageId)) {
                     if (pages.length > 0) {
-                        loadPage(pages[0].id);
+                        // Load first non-help page
+                        const nextPage = pages.find(p => p.id !== 'help_page') || pages[0];
+                        loadPage(nextPage.id);
                     } else {
                         createDefaultPage();
                         loadPage(pages[0].id);
@@ -5046,10 +5056,44 @@
             const stored = localStorage.getItem('noteflow_pages');
             if (stored) {
                 pages = JSON.parse(stored);
+                
                 // Migration for new properties
                 pages.forEach(p => {
                     if (p.collapsed === undefined) p.collapsed = false;
                 });
+                
+                // Clean up orphaned child pages (children whose parents don't exist)
+                let hasOrphans = true;
+                while (hasOrphans) {
+                    hasOrphans = false;
+                    const pageTitles = new Set(pages.map(p => p.title));
+                    pages = pages.filter(p => {
+                        const parts = p.title.split('::');
+                        if (parts.length > 1) {
+                            const parentTitle = parts.slice(0, -1).join('::');
+                            if (!pageTitles.has(parentTitle)) {
+                                hasOrphans = true;
+                                return false; // Remove orphan
+                            }
+                        }
+                        return true;
+                    });
+                }
+                
+                // Clean up stale favorite reference
+                const favoritePageId = localStorage.getItem('noteflow_favorite_page');
+                if (favoritePageId && !pages.find(p => p.id === favoritePageId)) {
+                    localStorage.removeItem('noteflow_favorite_page');
+                }
+                
+                // Clean up stale default page reference
+                const defaultPageId = localStorage.getItem('noteflow_default_page');
+                if (defaultPageId && !pages.find(p => p.id === defaultPageId)) {
+                    localStorage.removeItem('noteflow_default_page');
+                }
+                
+                // Save cleaned up pages
+                savePagesToLocal();
             }
         }
 
