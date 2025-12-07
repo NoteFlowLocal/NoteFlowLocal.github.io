@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NoteFlow - Your Personal Workspace</title>
+    <title>NoteFlow</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,7 +68,59 @@
                         hideToolbarTimeControls();
                     }
                 });
+                
+                // Initialize toolbar scroll buttons
+                initToolbarScroll();
             });
+            
+            // Toolbar scroll functions
+            function scrollToolbar(amount) {
+                const toolbar = document.getElementById('toolbar');
+                if (toolbar) {
+                    toolbar.scrollBy({ left: amount, behavior: 'smooth' });
+                }
+            }
+            
+            function updateScrollButtons() {
+                const toolbar = document.getElementById('toolbar');
+                const leftBtn = document.getElementById('toolbarScrollLeft');
+                const rightBtn = document.getElementById('toolbarScrollRight');
+                
+                if (!toolbar || !leftBtn || !rightBtn) return;
+                
+                const scrollLeft = toolbar.scrollLeft;
+                const scrollWidth = toolbar.scrollWidth;
+                const clientWidth = toolbar.clientWidth;
+                const maxScroll = scrollWidth - clientWidth;
+                
+                // Show/hide left button
+                if (scrollLeft > 5) {
+                    leftBtn.classList.add('visible');
+                } else {
+                    leftBtn.classList.remove('visible');
+                }
+                
+                // Show/hide right button
+                if (scrollLeft < maxScroll - 5) {
+                    rightBtn.classList.add('visible');
+                } else {
+                    rightBtn.classList.remove('visible');
+                }
+            }
+            
+            function initToolbarScroll() {
+                const toolbar = document.getElementById('toolbar');
+                if (!toolbar) return;
+                
+                // Update buttons on scroll
+                toolbar.addEventListener('scroll', updateScrollButtons);
+                
+                // Update buttons on window resize
+                window.addEventListener('resize', updateScrollButtons);
+                
+                // Initial update
+                setTimeout(updateScrollButtons, 100);
+            }
         </script>
     
     <style>
@@ -86,7 +138,7 @@
             --text-secondary: #787774;
             --border: #e0e0e0;
             --accent: #0084ff;
-            --sidebar-width: 260px;
+            --sidebar-width: 300px;
             --editor-bg: #ffffff;
             --code-bg: #f7f7f5;
             --status-bar-height: 30px;
@@ -178,19 +230,63 @@
         /* Sidebar Styling */
         .sidebar {
             width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
             background: var(--bg-secondary);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transition: width 0.3s ease, transform 0.3s ease;
+            transition: width 0.3s ease, min-width 0.3s ease;
             flex-shrink: 0;
             z-index: 10;
+            overflow: hidden;
         }
 
         .sidebar.collapsed {
             width: 0;
-            transform: translateX(-100%);
-            overflow: hidden;
+            min-width: 0;
+            border-right: none;
+        }
+
+        .sidebar.collapsed > * {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .sidebar-toggle-btn {
+            position: fixed;
+            top: 70px;
+            left: calc(var(--sidebar-width) - 14px);
+            width: 28px;
+            height: 28px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: var(--text-secondary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: left 0.3s ease, background 0.2s ease;
+            font-size: 12px;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .sidebar-toggle-btn.collapsed {
+            left: 10px;
+        }
+
+        .sidebar-toggle-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-toggle-btn.collapsed i {
+            transform: rotate(180deg);
         }
 
         .sidebar-header {
@@ -236,7 +332,7 @@
         }
 
         .page-item {
-            padding: 6px 16px;
+            padding: 6px 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -247,6 +343,7 @@
             user-select: none;
             margin: 0 8px;
             border-radius: 4px;
+            min-height: 32px;
         }
 
         .page-item:hover {
@@ -258,6 +355,197 @@
             background: var(--bg-hover);
             color: var(--text-primary);
             font-weight: 500;
+        }
+
+        .page-title-text {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .page-star-indicator {
+            color: #f1c40f;
+            font-size: 10px;
+            margin-left: 4px;
+            flex-shrink: 0;
+        }
+
+        .page-item-icons .fa-star {
+            color: var(--text-secondary);
+        }
+
+        .page-item-icons .fa-star.starred {
+            color: #f1c40f;
+        }
+
+        .page-item-icons .fa-star:hover {
+            color: #f1c40f;
+        }
+
+        .page-icon {
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 1;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+
+        .page-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .page-icon-empty {
+            opacity: 0.5;
+        }
+
+        .emoji-picker {
+            position: fixed;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .emoji-picker.active {
+            display: block;
+        }
+
+        .emoji-search-container {
+            margin-bottom: 10px;
+        }
+
+        .emoji-search {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .emoji-search:focus {
+            border-color: var(--accent);
+        }
+
+        .emoji-search::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .emoji-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            max-height: 70px;
+            overflow-y: auto;
+        }
+
+        .emoji-cat-btn {
+            padding: 4px 8px;
+            font-size: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .emoji-cat-btn:hover {
+            background: var(--bg-hover);
+        }
+
+        .emoji-cat-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+            margin-bottom: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .emoji-remove-btn {
+            width: 100%;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .emoji-remove-btn:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+            border-color: #ff4444;
+        }
+
+        .emoji-picker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .emoji-picker-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .emoji-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 4px;
+        }
+
+        .emoji-option {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+        .emoji-option:hover {
+            background: var(--bg-hover);
+        }
+
+        .emoji-remove-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .emoji-remove-btn:hover {
+            background: var(--bg-hover);
         }
 
         .page-item-icons {
@@ -301,6 +589,7 @@
             padding: 16px;
             border-top: 1px solid var(--border);
             overflow-y: auto;
+            overflow-x: hidden;
             max-height: 40vh;
         }
 
@@ -412,6 +701,147 @@
             font-size: 12px;
         }
 
+        /* Enhanced Todo Styles */
+        .sidebar-todo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .todo-filter-btn {
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .todo-filter-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .todo-progress-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            margin-bottom: 8px;
+        }
+
+        .todo-progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-hover);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .todo-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #27ae60);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .todo-progress-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .todo-filter-panel, .todo-options-panel {
+            display: none;
+            padding: 10px;
+            background: var(--bg-hover);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .todo-filter-panel.active, .todo-options-panel.active {
+            display: flex;
+        }
+
+        .filter-group, .todo-option-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label, .todo-option-group label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+
+        .filter-group select, .todo-option-group select,
+        .todo-option-group input {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 11px;
+        }
+
+        .todo-item {
+            flex-wrap: wrap;
+        }
+
+        .todo-priority-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .priority-high {
+            background: #ff4444;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #ffaa00;
+            color: #333;
+        }
+
+        .priority-low {
+            background: #27ae60;
+            color: white;
+        }
+
+        .todo-meta {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            padding-left: 24px;
+            margin-top: 4px;
+        }
+
+        .todo-meta-item {
+            font-size: 10px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .todo-meta-item.overdue {
+            color: #ff4444;
+        }
+
+        .todo-category-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+            background: var(--accent);
+            color: white;
+            border-radius: 10px;
+        }
+
         /* Main Content Area */
         .main-content {
             flex: 1;
@@ -422,16 +852,71 @@
             min-width: 0; /* Prevent flex overflow */
         }
 
-        .toolbar {
-            padding: 12px 40px;
+        .toolbar-wrapper {
+            position: relative;
             border-bottom: 1px solid var(--border);
-            display: flex;
-            gap: 12px;
-            align-items: center;
             background: var(--bg-primary);
             position: sticky;
             top: 0;
             z-index: 5;
+            display: flex;
+            align-items: center;
+        }
+
+        .toolbar-scroll-btn {
+            flex-shrink: 0;
+            width: 32px;
+            height: 100%;
+            min-height: 48px;
+            background: var(--bg-primary);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .toolbar-scroll-btn:hover {
+            background: var(--bg-hover);
+            color: var(--accent);
+        }
+
+        .toolbar-scroll-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toolbar-scroll-btn i {
+            font-size: 12px;
+        }
+
+        .toolbar-scroll-btn.left {
+            border-right: 1px solid var(--border);
+        }
+
+        .toolbar-scroll-btn.right {
+            border-left: 1px solid var(--border);
+        }
+
+        .toolbar {
+            padding: 12px 16px;
+            display: flex;
+            flex: 1;
+            gap: 12px;
+            align-items: center;
+            background: var(--bg-primary);
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .toolbar::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
         }
 
         .toolbar-btn {
@@ -473,6 +958,46 @@
             width: 100%;
         }
 
+        /* Breadcrumbs */
+        .breadcrumbs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .breadcrumb-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .breadcrumb-link:hover {
+            color: var(--accent);
+            background: var(--bg-hover);
+        }
+
+        .breadcrumb-separator {
+            color: var(--border);
+        }
+
+        .breadcrumb-current {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
         .page-title-input {
             width: 100%;
             border: none;
@@ -502,6 +1027,404 @@
         .editor ul, .editor ol { margin-left: 1.5em; margin-bottom: 1em; }
         .editor blockquote { border-left: 3px solid var(--border); padding-left: 1em; color: var(--text-secondary); }
         .editor pre { background: var(--code-bg); padding: 12px; border-radius: 4px; overflow-x: auto; font-family: monospace; }
+
+        /* Media container styles */
+        .media-container {
+            position: relative;
+            margin: 16px 0;
+            border-radius: 8px;
+            overflow: visible;
+            background: var(--bg-secondary);
+        }
+        
+        .media-container video,
+        .media-container audio {
+            display: block;
+        }
+        
+        .media-container iframe {
+            background: var(--bg-primary);
+        }
+        
+        /* Media action button */
+        .media-action-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+            z-index: 20;
+            transition: all 0.2s ease;
+        }
+        
+        .media-container:hover .media-action-btn,
+        .resizable-media:hover .media-action-btn,
+        .media-wrapper:hover .media-action-btn {
+            display: flex;
+        }
+        
+        .media-action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        
+        /* Media dropdown menu */
+        .media-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 160px;
+            z-index: 100;
+            display: none;
+            overflow: hidden;
+        }
+        
+        .media-dropdown.active {
+            display: block;
+        }
+        
+        .media-dropdown-item {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-primary);
+            transition: background 0.15s ease;
+        }
+        
+        .media-dropdown-item:hover {
+            background: var(--bg-hover);
+        }
+        
+        .media-dropdown-item i {
+            width: 16px;
+            color: var(--text-secondary);
+        }
+        
+        .media-dropdown-item.danger {
+            color: #dc2626;
+        }
+        
+        .media-dropdown-item.danger i {
+            color: #dc2626;
+        }
+        
+        .media-dropdown-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        /* Resizable media and images */
+        .resizable-media {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+        }
+        
+        .resizable-media img,
+        .resizable-media video,
+        .resizable-media iframe {
+            display: block;
+            max-width: 100%;
+        }
+        
+        .resizable-media:hover .resize-handle,
+        .resizable-media.resizing .resize-handle {
+            opacity: 1;
+        }
+        
+        .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border: 2px solid white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 20;
+            cursor: nwse-resize;
+        }
+        
+        .resize-handle.se {
+            bottom: -6px;
+            right: -6px;
+        }
+        
+        .resize-handle.sw {
+            bottom: -6px;
+            left: -6px;
+            cursor: nesw-resize;
+        }
+        
+        .resizable-media::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            pointer-events: none;
+            transition: border-color 0.2s ease;
+        }
+        
+        .resizable-media:hover::before,
+        .resizable-media.resizing::before {
+            border-color: var(--accent);
+        }
+        
+        .resizable-media .size-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        
+        .resizable-media.resizing .size-indicator {
+            opacity: 1;
+        }
+
+        /* Tags System */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px 0;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tag:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+        
+        .tag .tag-remove {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-left: 2px;
+        }
+        
+        .tag .tag-remove:hover {
+            opacity: 1;
+        }
+        
+        .tag-input-wrapper {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .tag-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 12px;
+            color: var(--text-primary);
+            padding: 4px 8px;
+            min-width: 80px;
+        }
+        
+        .tag-input::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        .add-tag-btn {
+            background: none;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            padding: 4px 10px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .add-tag-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        /* Tag colors */
+        .tag[data-color="red"] { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+        .tag[data-color="orange"] { background: #ffedd5; color: #ea580c; border-color: #fdba74; }
+        .tag[data-color="yellow"] { background: #fef9c3; color: #ca8a04; border-color: #fde047; }
+        .tag[data-color="green"] { background: #dcfce7; color: #16a34a; border-color: #86efac; }
+        .tag[data-color="blue"] { background: #dbeafe; color: #2563eb; border-color: #93c5fd; }
+        .tag[data-color="purple"] { background: #f3e8ff; color: #9333ea; border-color: #d8b4fe; }
+        .tag[data-color="pink"] { background: #fce7f3; color: #db2777; border-color: #f9a8d4; }
+        .tag[data-color="gray"] { background: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
+        
+        /* Dark theme tag adjustments */
+        [data-theme="dark"] .tag[data-color="red"] { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
+        [data-theme="dark"] .tag[data-color="orange"] { background: #7c2d12; color: #fdba74; border-color: #9a3412; }
+        [data-theme="dark"] .tag[data-color="yellow"] { background: #713f12; color: #fde047; border-color: #854d0e; }
+        [data-theme="dark"] .tag[data-color="green"] { background: #14532d; color: #86efac; border-color: #166534; }
+        [data-theme="dark"] .tag[data-color="blue"] { background: #1e3a5f; color: #93c5fd; border-color: #1e40af; }
+        [data-theme="dark"] .tag[data-color="purple"] { background: #581c87; color: #d8b4fe; border-color: #6b21a8; }
+        [data-theme="dark"] .tag[data-color="pink"] { background: #831843; color: #f9a8d4; border-color: #9d174d; }
+        [data-theme="dark"] .tag[data-color="gray"] { background: #374151; color: #d1d5db; border-color: #4b5563; }
+        
+        /* Sidebar tag filter */
+        .sidebar-tags-filter {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .sidebar-tags-filter-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .sidebar-tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .sidebar-tag {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            cursor: pointer;
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-tag:hover,
+        .sidebar-tag.active {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .sidebar-tag.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Slash Commands Menu */
+        .slash-menu {
+            position: absolute;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-height: 320px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: 280px;
+            display: none;
+        }
+        
+        .slash-menu.active {
+            display: block;
+        }
+        
+        .slash-menu-header {
+            padding: 8px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .slash-menu-item {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        
+        .slash-menu-item:hover,
+        .slash-menu-item.selected {
+            background: var(--bg-hover);
+        }
+        
+        .slash-menu-item-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+        
+        .slash-menu-item-content {
+            flex: 1;
+        }
+        
+        .slash-menu-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .slash-menu-item-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .slash-menu-empty {
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
 
         /* Status Bar */
         .status-bar {
@@ -760,6 +1683,130 @@
             cursor: pointer;
         }
 
+        /* Font Settings */
+        .font-settings, .animation-settings {
+            margin-top: 15px;
+        }
+
+        .font-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .font-input-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .font-input-item label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .font-input-item select {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        /* Animation Toggle */
+        .animation-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: var(--accent);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        body.animations-enabled .page-item {
+            animation: slideIn 0.2s ease;
+        }
+
+        body.animations-enabled .todo-item {
+            animation: slideUp 0.2s ease;
+        }
+
+        body.animations-enabled .modal.active .modal-content {
+            animation: scaleIn 0.2s ease;
+        }
+
+        body.animations-enabled .editor-container {
+            animation: fadeIn 0.3s ease;
+        }
+
         .theme-actions {
             margin-top: 20px;
             display: flex;
@@ -785,15 +1832,22 @@
         /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
+            min-width: var(--sidebar-width);
             background: var(--bg-secondary);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transition: margin-left 0.3s ease, background-color 0.3s ease;
+            flex-shrink: 0;
+            overflow: hidden;
+            z-index: 10;
+            transition: width 0.3s ease, min-width 0.3s ease, background-color 0.3s ease;
         }
 
         .sidebar.collapsed {
-            margin-left: calc(-1 * var(--sidebar-width));
+            width: 0;
+            min-width: 0;
+            margin-left: 0;
+            border-right: none;
         }
 
         .sidebar-header {
@@ -916,16 +1970,25 @@
             overflow: hidden;
             background: var(--editor-bg);
             transition: background-color 0.3s ease;
+            min-width: 0;
+            position: relative;
         }
 
         .toolbar {
             padding: 12px 20px;
-            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             gap: 15px;
             background: var(--bg-primary);
             transition: background-color 0.3s ease;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .toolbar::-webkit-scrollbar {
+            display: none;
         }
 
         .toolbar-btn {
@@ -1037,6 +2100,242 @@
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Courier New', monospace;
+        }
+
+        /* Table Styles */
+        .editor table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .editor table th,
+        .editor table td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        .editor table th {
+            background: var(--bg-hover);
+            font-weight: 600;
+        }
+
+        .editor table tr:hover td {
+            background: var(--bg-hover);
+        }
+
+        /* Checklist Styles */
+        .editor .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .editor .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .editor .checklist-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .editor .checklist-item.checked .checklist-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .editor .checklist-text {
+            flex: 1;
+            outline: none;
+        }
+
+        /* Collapsible Section Styles */
+        .editor .collapsible-section {
+            margin: 15px 0;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: visible;
+            position: relative;
+        }
+
+        .editor .collapsible-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            padding-right: 45px;
+            background: var(--bg-hover);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .editor .collapsible-header:hover {
+            background: var(--bg-secondary);
+        }
+
+        .editor .collapsible-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .editor .collapsible-section.collapsed .collapsible-icon {
+            transform: rotate(-90deg);
+        }
+
+        .editor .collapsible-title {
+            font-weight: 600;
+            flex: 1;
+            outline: none;
+        }
+
+        .editor .collapsible-content {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+        }
+
+        .editor .collapsible-section.collapsed .collapsible-content {
+            display: none;
+        }
+        
+        /* Collapsible action button */
+        .collapsible-action-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-secondary);
+            z-index: 20;
+            transition: all 0.2s ease;
+        }
+        
+        .collapsible-section:hover .collapsible-action-btn {
+            display: flex;
+        }
+        
+        .collapsible-action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        
+        /* Collapsible dropdown menu */
+        .collapsible-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 140px;
+            z-index: 100;
+            display: none;
+            overflow: hidden;
+        }
+        
+        .collapsible-dropdown.active {
+            display: block;
+        }
+        
+        .collapsible-dropdown-item {
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-primary);
+            transition: background 0.15s ease;
+        }
+        
+        .collapsible-dropdown-item:hover {
+            background: var(--bg-hover);
+        }
+        
+        .collapsible-dropdown-item i {
+            width: 16px;
+            color: var(--text-secondary);
+        }
+        
+        .collapsible-dropdown-item.danger {
+            color: #dc2626;
+        }
+        
+        .collapsible-dropdown-item.danger i {
+            color: #dc2626;
+        }
+
+        /* Image Styles */
+        .editor img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+
+        .editor img:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .editor .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 15px 0;
+        }
+
+        .editor .image-container img {
+            margin: 0;
+        }
+
+        .editor .image-resize-handle {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 4px;
+            cursor: se-resize;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .editor .image-container:hover .image-resize-handle {
+            opacity: 0.7;
+        }
+
+        /* Page Link Styles */
+        .editor .page-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            background: var(--bg-hover);
+            border-radius: 4px;
+            color: var(--accent);
+            text-decoration: none;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-modify: read-only;
+        }
+
+        .editor .page-link:hover {
+            background: var(--bg-secondary);
         }
 
         /* Modal Styles */
@@ -1168,7 +2467,12 @@
             display: none;
         }
 
+        /* Mobile-first responsive improvements */
         @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 280px;
+            }
+
             .toggle-sidebar {
                 display: block;
             }
@@ -1177,10 +2481,82 @@
                 position: fixed;
                 z-index: 99;
                 height: 100vh;
+                left: 0;
+                transform: translateX(0);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.collapsed {
+                transform: translateX(-100%);
+                width: var(--sidebar-width);
+                min-width: var(--sidebar-width);
+            }
+            
+            /* Mobile sidebar overlay */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 98;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .sidebar-toggle-btn {
+                top: 12px;
+                left: 12px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .sidebar-toggle-btn.collapsed {
+                left: 12px;
             }
             
             .editor-container {
-                padding: 20px;
+                padding: 16px;
+            }
+            
+            .page-title-input {
+                font-size: 28px;
+            }
+
+            /* Touch-friendly toolbar */
+            .toolbar {
+                padding: 8px 12px;
+                gap: 4px;
+            }
+            
+            .toolbar-btn {
+                min-width: 40px;
+                min-height: 40px;
+                padding: 10px;
+            }
+            
+            .toolbar-separator {
+                margin: 0 4px;
+            }
+            
+            .toolbar-scroll-btn {
+                width: 40px;
+                min-height: 52px;
+            }
+            
+            .toolbar-scroll-btn i {
+                font-size: 14px;
+            }
+
+            /* Larger touch targets for page items */
+            .page-item {
+                min-height: 44px;
+                padding: 10px 12px;
             }
 
             .storage-options {
@@ -1194,6 +2570,103 @@
                 width: calc(100% - 40px);
                 right: 20px;
                 left: 20px;
+                max-height: 70vh;
+            }
+            
+            .theme-switcher-btn {
+                width: 50px;
+                height: 50px;
+            }
+            
+            /* Todo panel mobile */
+            .todo-panel {
+                width: 100%;
+                max-width: 100%;
+                right: 0;
+                left: 0;
+                border-radius: 16px 16px 0 0;
+                max-height: 60vh;
+            }
+            
+            /* Word count smaller on mobile */
+            .word-count-display {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+            
+            /* Time widget compact on mobile */
+            .toolbar-time-elegant {
+                padding: 4px 10px !important;
+            }
+            
+            .toolbar-time-widget {
+                font-size: 13px !important;
+                min-width: 60px !important;
+            }
+        }
+        
+        /* Small mobile (phones) */
+        @media (max-width: 480px) {
+            .editor-container {
+                padding: 12px;
+            }
+            
+            .page-title-input {
+                font-size: 24px;
+            }
+            
+            .toolbar-btn {
+                min-width: 36px;
+                min-height: 36px;
+                padding: 8px;
+                font-size: 13px;
+            }
+            
+            .theme-panel {
+                width: calc(100% - 20px);
+                right: 10px;
+                left: 10px;
+                padding: 16px;
+            }
+            
+            .sidebar-header {
+                padding: 12px;
+            }
+            
+            .app-title span {
+                font-size: 16px;
+            }
+        }
+        
+        /* Tablet landscape */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            :root {
+                --sidebar-width: 260px;
+            }
+            
+            .editor-container {
+                padding: 30px 40px;
+            }
+        }
+        
+        /* Touch device detection - larger targets */
+        @media (hover: none) and (pointer: coarse) {
+            .toolbar-btn {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            .page-item {
+                min-height: 48px;
+            }
+            
+            .page-item-icons i {
+                padding: 8px;
+            }
+            
+            .sidebar-toggle-btn {
+                width: 44px;
+                height: 44px;
             }
         }
 
@@ -1293,6 +2766,14 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Mobile Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Sidebar Toggle Button -->
+        <button class="sidebar-toggle-btn" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -1306,6 +2787,12 @@
                 <input type="text" class="search-input" id="searchInput" placeholder="Search pages..." oninput="filterPages()">
             </div>
             
+            <!-- Tags Filter -->
+            <div class="sidebar-tags-filter" id="sidebarTagsFilter" style="display: none;">
+                <div class="sidebar-tags-filter-title">Filter by tags</div>
+                <div class="sidebar-tags-list" id="sidebarTagsList"></div>
+            </div>
+            
             <div class="pages-list" id="pagesList"></div>
             
             <button class="new-page-btn" onclick="createNewPage()">
@@ -1316,13 +2803,84 @@
             <div class="sidebar-todo-section">
                 <div class="sidebar-todo-header">
                     <h4>✓ Todo List</h4>
+                    <div class="todo-filter-btn" onclick="toggleTodoFilter()">
+                        <i class="fas fa-filter"></i>
+                    </div>
+                </div>
+                
+                <!-- Todo Progress Bar -->
+                <div class="todo-progress-container">
+                    <div class="todo-progress-bar">
+                        <div class="todo-progress-fill" id="todoProgressFill"></div>
+                    </div>
+                    <span class="todo-progress-text" id="todoProgressText">0/0 done</span>
+                </div>
+                
+                <!-- Todo Filter Panel -->
+                <div class="todo-filter-panel" id="todoFilterPanel">
+                    <div class="filter-group">
+                        <label>Priority:</label>
+                        <select id="filterPriority" onchange="renderTodos()">
+                            <option value="all">All</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Category:</label>
+                        <select id="filterCategory" onchange="renderTodos()">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select id="filterStatus" onchange="renderTodos()">
+                            <option value="all">All</option>
+                            <option value="active">Active</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="todo-input-section">
                     <input type="text" class="todo-input" id="todoInput" placeholder="Add a task..." onkeypress="if(event.key==='Enter') addTodo()">
+                    <button class="todo-add-btn" onclick="toggleTodoOptions()">
+                        <i class="fas fa-cog"></i>
+                    </button>
                     <button class="todo-add-btn" onclick="addTodo()">
                         <i class="fas fa-plus"></i>
                     </button>
+                </div>
+                
+                <!-- Todo Options Panel -->
+                <div class="todo-options-panel" id="todoOptionsPanel">
+                    <div class="todo-option-group">
+                        <label><i class="fas fa-flag"></i> Priority</label>
+                        <select id="todoPriority">
+                            <option value="none">None</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="todo-option-group">
+                        <label><i class="fas fa-calendar"></i> Due Date</label>
+                        <input type="date" id="todoDueDate">
+                    </div>
+                    <div class="todo-option-group">
+                        <label><i class="fas fa-tag"></i> Category</label>
+                        <input type="text" id="todoCategory" placeholder="e.g., Work, Personal">
+                    </div>
+                    <div class="todo-option-group">
+                        <label><i class="fas fa-redo"></i> Recurring</label>
+                        <select id="todoRecurring">
+                            <option value="none">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="todo-list" id="todoList">
@@ -1334,7 +2892,11 @@
         <!-- Main Content -->
         <div class="main-content">
             <!-- Toolbar -->
-            <div class="toolbar">
+            <div class="toolbar-wrapper">
+                <button class="toolbar-scroll-btn left" id="toolbarScrollLeft" onclick="scrollToolbar(-200)" title="Scroll left">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="toolbar" id="toolbar">
                 <button class="toolbar-btn" onclick="formatText('bold')">
                     <i class="fas fa-bold"></i>
                 </button>
@@ -1377,12 +2939,95 @@
                 <button class="toolbar-btn" onclick="formatBlock('pre')">
                     <i class="fas fa-code"></i>
                 </button>
+                <button class="toolbar-btn" onclick="insertTable()" title="Insert Table">
+                    <i class="fas fa-table"></i>
+                </button>
+                <button class="toolbar-btn" onclick="insertImage()" title="Insert Image">
+                    <i class="fas fa-image"></i>
+                </button>
+                <button class="toolbar-btn" onclick="insertVideo()" title="Insert Video">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="toolbar-btn" onclick="insertAudio()" title="Insert Audio">
+                    <i class="fas fa-music"></i>
+                </button>
+                <button class="toolbar-btn" onclick="insertEmbed()" title="Embed Web Content">
+                    <i class="fas fa-globe"></i>
+                </button>
+                <button class="toolbar-btn" onclick="insertChecklist()" title="Insert Checklist">
+                    <i class="fas fa-tasks"></i>
+                </button>
+                <button class="toolbar-btn" onclick="insertCollapsible()" title="Insert Collapsible Section">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <button class="toolbar-btn" onclick="insertPageLink()" title="Link to Page">
+                    <i class="fas fa-file-alt"></i>
+                </button>
                 
                 <div class="toolbar-separator"></div>
                 
                 <div class="word-count-display" id="wordCountDisplay">
                     0 words
                 </div>
+                
+                <!-- Font Settings Dropdown -->
+                <div class="toolbar-dropdown" style="position: relative; margin-left: 8px;">
+                    <button class="toolbar-btn" onclick="toggleFontPanel()" title="Font & Display Settings" style="display: flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-font"></i>
+                        <i class="fas fa-caret-down" style="font-size: 10px;"></i>
+                    </button>
+                    <div id="fontSettingsPanel" class="toolbar-font-panel" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 15px; min-width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                                <i class="fas fa-font" style="margin-right: 5px;"></i>Font Family
+                            </label>
+                            <select id="fontFamilySelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                                <option value="'Inter', sans-serif">Inter (Default)</option>
+                                <option value="'Georgia', serif">Georgia</option>
+                                <option value="'Times New Roman', serif">Times New Roman</option>
+                                <option value="'Arial', sans-serif">Arial</option>
+                                <option value="'Helvetica', sans-serif">Helvetica</option>
+                                <option value="'Courier New', monospace">Courier New</option>
+                                <option value="'Verdana', sans-serif">Verdana</option>
+                                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                                <option value="'Palatino', serif">Palatino</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                                <i class="fas fa-text-height" style="margin-right: 5px;"></i>Font Size
+                            </label>
+                            <select id="fontSizeSelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                                <option value="14px">Small (14px)</option>
+                                <option value="16px">Normal (16px)</option>
+                                <option value="18px">Large (18px)</option>
+                                <option value="20px">X-Large (20px)</option>
+                                <option value="22px">XX-Large (22px)</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                                <i class="fas fa-arrows-alt-v" style="margin-right: 5px;"></i>Line Spacing
+                            </label>
+                            <select id="lineHeightSelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                                <option value="1.4">Compact (1.4)</option>
+                                <option value="1.6">Normal (1.6)</option>
+                                <option value="1.8">Relaxed (1.8)</option>
+                                <option value="2.0">Spacious (2.0)</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border);">
+                            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-magic"></i>Animations
+                            </label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="animationsToggleToolbar" checked onchange="toggleAnimationsFromToolbar()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
                     <div class="toolbar-time-elegant" style="margin-left:16px; display:flex; align-items:center; gap:12px; background:var(--bg-hover); border-radius:8px; padding:4px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.04); position:relative;">
                         <span style="display:flex; align-items:center; gap:6px;">
                             <i class="fas fa-clock" style="color:var(--accent); font-size:15px;"></i>
@@ -1402,11 +3047,21 @@
                             </select>
                         </span>
                     </div>
+                </div>
+                <button class="toolbar-scroll-btn right" id="toolbarScrollRight" onclick="scrollToolbar(200)" title="Scroll right">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
 
             <!-- Editor -->
             <div class="editor-container">
+                <div class="breadcrumbs" id="breadcrumbs"></div>
                 <input type="text" class="page-title-input" id="pageTitle" placeholder="Untitled" />
+                <div class="tags-container" id="tagsContainer">
+                    <button class="add-tag-btn" onclick="showAddTagInput()">
+                        <i class="fas fa-plus"></i> Add tag
+                    </button>
+                </div>
                 <div class="editor" id="editor" contenteditable="true" placeholder="Start typing..."></div>
             </div>
 
@@ -1528,6 +3183,56 @@
             </div>
         </div>
 
+        <div class="font-settings">
+            <div class="preset-title">Font Settings</div>
+            <div class="font-input-group">
+                <div class="font-input-item">
+                    <label>Editor Font</label>
+                    <select id="fontFamilySelect" onchange="applyFontSettings()">
+                        <option value="'Inter', sans-serif">Inter (Default)</option>
+                        <option value="'Georgia', serif">Georgia</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                        <option value="'Arial', sans-serif">Arial</option>
+                        <option value="'Helvetica', sans-serif">Helvetica</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                        <option value="'Verdana', sans-serif">Verdana</option>
+                        <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                        <option value="'Palatino', serif">Palatino</option>
+                    </select>
+                </div>
+                <div class="font-input-item">
+                    <label>Font Size</label>
+                    <select id="fontSizeSelect" onchange="applyFontSettings()">
+                        <option value="14px">Small (14px)</option>
+                        <option value="16px" selected>Normal (16px)</option>
+                        <option value="18px">Large (18px)</option>
+                        <option value="20px">X-Large (20px)</option>
+                        <option value="22px">XX-Large (22px)</option>
+                    </select>
+                </div>
+                <div class="font-input-item">
+                    <label>Line Height</label>
+                    <select id="lineHeightSelect" onchange="applyFontSettings()">
+                        <option value="1.4">Compact (1.4)</option>
+                        <option value="1.6" selected>Normal (1.6)</option>
+                        <option value="1.8">Relaxed (1.8)</option>
+                        <option value="2.0">Spacious (2.0)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="animation-settings">
+            <div class="preset-title">Animations</div>
+            <div class="animation-toggle">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="animationsToggle" checked onchange="toggleAnimations()">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span>Enable Animations</span>
+            </div>
+        </div>
+
         <div class="theme-actions">
             <button class="reset-theme-btn" onclick="resetTheme()">
                 <i class="fas fa-undo"></i> Reset to Default
@@ -1568,6 +3273,20 @@
             </div>
             <div class="modal-body">
                 <input type="text" class="modal-input" id="newPageName" placeholder="Enter page name (use :: for hierarchy)..." />
+                <div style="margin-top: 15px;">
+                    <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; color: var(--text-secondary);">
+                        <i class="fas fa-file-alt" style="margin-right: 5px;"></i>Start from Template (optional)
+                    </label>
+                    <select id="newPageTemplate" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; cursor: pointer;">
+                        <option value="blank">Blank Page</option>
+                        <option value="meeting">Meeting Notes</option>
+                        <option value="project">Project Plan</option>
+                        <option value="todo">To-Do List</option>
+                        <option value="journal">Daily Journal</option>
+                        <option value="weekly">Weekly Review</option>
+                        <option value="notes">Study Notes</option>
+                    </select>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('newPageModal')">Cancel</button>
@@ -1632,6 +3351,21 @@
 
     <!-- Toast notification -->
     <div class="toast" id="toast"></div>
+
+    <!-- Slash Commands Menu -->
+    <div class="slash-menu" id="slashMenu">
+        <div class="slash-menu-header">Basic Blocks</div>
+        <div id="slashMenuItems"></div>
+    </div>
+
+    <!-- Emoji Picker -->
+    <div class="emoji-picker" id="emojiPicker">
+        <div class="emoji-picker-header">
+            <span class="emoji-picker-title">Choose Icon</span>
+            <button class="emoji-remove-btn" onclick="removePageIcon()">Remove</button>
+        </div>
+        <div class="emoji-picker-grid" id="emojiGrid"></div>
+    </div>
 
     <!-- Link Tooltip -->
     <div class="link-tooltip" id="linkTooltip">
@@ -1750,17 +3484,30 @@
         function initApp() {
             loadPagesFromLocal();
             loadThemeSettings();
+            loadSidebarState();
             
             ensureHelpPage();
             
             if (pages.length === 0) {
                 createDefaultPage();
-            } else if (!currentPageId || !pages.find(p => p.id === currentPageId)) {
-                loadPage(pages.find(p => p.id !== 'help_page')?.id || pages[0].id);
+            } else {
+                // Check for favorite page first
+                const favoritePageId = localStorage.getItem('noteflow_favorite_page');
+                const favoritePage = favoritePageId ? pages.find(p => p.id === favoritePageId) : null;
+                
+                if (favoritePage) {
+                    // Load favorite page on startup
+                    loadPage(favoritePageId);
+                } else if (!currentPageId || !pages.find(p => p.id === currentPageId)) {
+                    loadPage(pages.find(p => p.id !== 'help_page')?.id || pages[0].id);
+                }
             }
             
             renderPagesList();
+            renderSidebarTags();
             initLinkTooltip();
+            initSlashCommands();
+            initResizableMedia();
             
             // Auto-save every 30 seconds
             setInterval(autoSave, 30000);
@@ -1776,11 +3523,82 @@
                 debouncedSave();
             });
             
+            // Handle Enter key to break out of blockquotes and pre blocks
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    const selection = window.getSelection();
+                    if (!selection.rangeCount) return;
+                    
+                    const node = selection.anchorNode;
+                    const blockquote = node.nodeType === 3 ? node.parentElement.closest('blockquote') : node.closest('blockquote');
+                    const preBlock = node.nodeType === 3 ? node.parentElement.closest('pre') : node.closest('pre');
+                    
+                    const parentBlock = blockquote || preBlock;
+                    
+                    if (parentBlock) {
+                        // Check if we're at an empty line or end of content
+                        const textContent = node.textContent || '';
+                        const isAtEnd = selection.anchorOffset === textContent.length;
+                        const isEmpty = textContent.trim() === '';
+                        
+                        // If pressing Enter on empty line or at the very end with empty last line, break out
+                        if (isEmpty || (isAtEnd && textContent.endsWith('\n'))) {
+                            e.preventDefault();
+                            
+                            // Create a new paragraph after the block
+                            const p = document.createElement('p');
+                            p.innerHTML = '<br>';
+                            parentBlock.parentNode.insertBefore(p, parentBlock.nextSibling);
+                            
+                            // Move cursor to new paragraph
+                            const range = document.createRange();
+                            range.setStart(p, 0);
+                            range.collapse(true);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                        }
+                    }
+                }
+            });
+            
             // Also update word count on keyup for better responsiveness
             editor.addEventListener('keyup', updateWordCount);
             
             // Initial word count update
             updateWordCount();
+        }
+
+        // Sidebar Toggle Function
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('collapsed');
+            toggleBtn.classList.toggle('collapsed');
+            
+            // Handle mobile overlay
+            if (window.innerWidth <= 768) {
+                if (sidebar.classList.contains('collapsed')) {
+                    overlay.classList.remove('active');
+                } else {
+                    overlay.classList.add('active');
+                }
+            }
+            
+            // Save state to localStorage
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('noteflow_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+        }
+        
+        function loadSidebarState() {
+            const isCollapsed = localStorage.getItem('noteflow_sidebar_collapsed') === 'true';
+            if (isCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                const toggleBtn = document.getElementById('sidebarToggle');
+                sidebar.classList.add('collapsed');
+                toggleBtn.classList.add('collapsed');
+            }
         }
 
         // Theme Management Functions
@@ -1795,12 +3613,18 @@
 
         // Todo List Functions
         let todos = [];
+        let todoCategories = new Set();
 
         function loadTodos() {
             try {
                 const stored = localStorage.getItem('noteflow_todos');
                 if (stored && stored !== 'undefined' && stored !== 'null') {
                     todos = JSON.parse(stored);
+                    // Rebuild categories from todos
+                    todos.forEach(t => {
+                        if (t.category) todoCategories.add(t.category);
+                    });
+                    updateCategoryFilter();
                     console.log('Loaded todos:', todos);
                 } else {
                     todos = [];
@@ -1812,37 +3636,105 @@
             }
         }
 
+        function toggleTodoFilter() {
+            document.getElementById('todoFilterPanel').classList.toggle('active');
+        }
+
+        function toggleTodoOptions() {
+            document.getElementById('todoOptionsPanel').classList.toggle('active');
+        }
+
+        function updateCategoryFilter() {
+            const select = document.getElementById('filterCategory');
+            if (!select) return;
+            const currentValue = select.value;
+            select.innerHTML = '<option value="all">All</option>';
+            todoCategories.forEach(cat => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+            select.value = currentValue;
+        }
+
         function addTodo() {
             const input = document.getElementById('todoInput');
             const text = input.value.trim();
             
-            if (text === '') {
-                console.log('Empty todo, not adding');
-                return;
-            }
+            if (text === '') return;
+            
+            const priority = document.getElementById('todoPriority').value;
+            const dueDate = document.getElementById('todoDueDate').value;
+            const category = document.getElementById('todoCategory').value.trim();
+            const recurring = document.getElementById('todoRecurring').value;
             
             const todo = {
                 id: Date.now(),
                 text: text,
                 completed: false,
+                priority: priority !== 'none' ? priority : null,
+                dueDate: dueDate || null,
+                category: category || null,
+                recurring: recurring !== 'none' ? recurring : null,
                 createdAt: new Date().toISOString()
             };
             
-            console.log('Adding todo:', todo);
+            if (category) {
+                todoCategories.add(category);
+                updateCategoryFilter();
+            }
+            
             todos.unshift(todo);
-            console.log('Todos array now:', todos);
             saveTodos();
             renderTodos();
+            
+            // Reset inputs
             input.value = '';
-            console.log('Todo added and rendered');
+            document.getElementById('todoPriority').value = 'none';
+            document.getElementById('todoDueDate').value = '';
+            document.getElementById('todoCategory').value = '';
+            document.getElementById('todoRecurring').value = 'none';
+            document.getElementById('todoOptionsPanel').classList.remove('active');
         }
 
         function toggleTodo(id) {
             const todo = todos.find(t => t.id === id);
             if (todo) {
                 todo.completed = !todo.completed;
+                
+                // Handle recurring todos
+                if (todo.completed && todo.recurring && todo.dueDate) {
+                    createRecurringTodo(todo);
+                }
+                
                 saveTodos();
                 renderTodos();
+            }
+        }
+
+        function createRecurringTodo(originalTodo) {
+            const dueDate = new Date(originalTodo.dueDate);
+            let newDueDate;
+            
+            switch (originalTodo.recurring) {
+                case 'daily':
+                    newDueDate = new Date(dueDate.setDate(dueDate.getDate() + 1));
+                    break;
+                case 'weekly':
+                    newDueDate = new Date(dueDate.setDate(dueDate.getDate() + 7));
+                    break;
+                case 'monthly':
+                    newDueDate = new Date(dueDate.setMonth(dueDate.getMonth() + 1));
+                    break;
+            }
+            
+            if (newDueDate) {
+                const newTodo = {
+                    ...originalTodo,
+                    id: Date.now(),
+                    completed: false,
+                    dueDate: newDueDate.toISOString().split('T')[0],
+                    createdAt: new Date().toISOString()
+                };
+                todos.unshift(newTodo);
             }
         }
 
@@ -1855,39 +3747,100 @@
         function saveTodos() {
             try {
                 localStorage.setItem('noteflow_todos', JSON.stringify(todos));
-                console.log('Saved todos:', todos);
             } catch (e) {
                 console.error('Error saving todos:', e);
             }
         }
 
+        function updateTodoProgress() {
+            const total = todos.length;
+            const completed = todos.filter(t => t.completed).length;
+            const percent = total > 0 ? (completed / total) * 100 : 0;
+            
+            const progressFill = document.getElementById('todoProgressFill');
+            const progressText = document.getElementById('todoProgressText');
+            
+            if (progressFill) progressFill.style.width = percent + '%';
+            if (progressText) progressText.textContent = `${completed}/${total} done`;
+        }
+
+        function getFilteredTodos() {
+            const priorityFilter = document.getElementById('filterPriority')?.value || 'all';
+            const categoryFilter = document.getElementById('filterCategory')?.value || 'all';
+            const statusFilter = document.getElementById('filterStatus')?.value || 'all';
+            
+            return todos.filter(todo => {
+                if (priorityFilter !== 'all' && todo.priority !== priorityFilter) return false;
+                if (categoryFilter !== 'all' && todo.category !== categoryFilter) return false;
+                if (statusFilter === 'active' && todo.completed) return false;
+                if (statusFilter === 'completed' && !todo.completed) return false;
+                return true;
+            });
+        }
+
+        function isOverdue(dueDate) {
+            if (!dueDate) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return new Date(dueDate) < today;
+        }
+
+        function formatDueDate(dueDate) {
+            if (!dueDate) return '';
+            const date = new Date(dueDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            if (date.toDateString() === today.toDateString()) return 'Today';
+            if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
         function renderTodos() {
             const todoList = document.getElementById('todoList');
+            if (!todoList) return;
             
-            if (!todoList) {
-                console.error('Todo list element not found');
-                return;
-            }
+            updateTodoProgress();
             
-            console.log('Rendering todos, count:', todos.length);
+            const filteredTodos = getFilteredTodos();
             
-            if (!todos || todos.length === 0) {
+            if (!filteredTodos || filteredTodos.length === 0) {
                 todoList.innerHTML = '<div class="todo-empty">No tasks yet</div>';
                 return;
             }
             
-            todoList.innerHTML = todos.map(todo => `
-                <div class="todo-item">
-                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
-                           onchange="toggleTodo(${todo.id})">
-                    <span class="todo-text ${todo.completed ? 'completed' : ''}">${escapeHtml(todo.text)}</span>
-                    <button class="todo-delete-btn" onclick="deleteTodo(${todo.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `).join('');
-            
-            console.log('Todos rendered successfully');
+            todoList.innerHTML = filteredTodos.map(todo => {
+                const priorityBadge = todo.priority ? 
+                    `<span class="todo-priority-badge priority-${todo.priority}">${todo.priority.charAt(0).toUpperCase()}</span>` : '';
+                
+                const metaItems = [];
+                if (todo.dueDate) {
+                    const overdueClass = !todo.completed && isOverdue(todo.dueDate) ? 'overdue' : '';
+                    metaItems.push(`<span class="todo-meta-item ${overdueClass}"><i class="fas fa-calendar"></i> ${formatDueDate(todo.dueDate)}</span>`);
+                }
+                if (todo.category) {
+                    metaItems.push(`<span class="todo-category-badge">${todo.category}</span>`);
+                }
+                if (todo.recurring) {
+                    metaItems.push(`<span class="todo-meta-item"><i class="fas fa-redo"></i> ${todo.recurring}</span>`);
+                }
+                
+                const metaHtml = metaItems.length > 0 ? `<div class="todo-meta">${metaItems.join('')}</div>` : '';
+                
+                return `
+                    <div class="todo-item">
+                        <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                               onchange="toggleTodo(${todo.id})">
+                        <span class="todo-text ${todo.completed ? 'completed' : ''}">${escapeHtml(todo.text)}${priorityBadge}</span>
+                        <button class="todo-delete-btn" onclick="deleteTodo(${todo.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        ${metaHtml}
+                    </div>
+                `;
+            }).join('');
         }
 
         function escapeHtml(text) {
@@ -2048,7 +4001,152 @@
             const settings = JSON.parse(localStorage.getItem('noteflow_theme_settings') || '{}');
             globalTheme = settings.globalTheme || 'default';
             selectedPagesForTheme = settings.selectedPagesForTheme || [];
+            
+            // Load font settings
+            loadFontSettings();
+            
+            // Load animation settings
+            loadAnimationSettings();
         }
+
+        // Font Settings Functions
+        function applyFontSettings() {
+            const fontFamily = document.getElementById('fontFamilySelect').value;
+            const fontSize = document.getElementById('fontSizeSelect').value;
+            const lineHeight = document.getElementById('lineHeightSelect').value;
+            
+            const editor = document.getElementById('editor');
+            editor.style.fontFamily = fontFamily;
+            editor.style.fontSize = fontSize;
+            editor.style.lineHeight = lineHeight;
+            
+            // Save settings
+            saveFontSettings();
+            showToast('Font settings applied!');
+        }
+
+        function saveFontSettings() {
+            const settings = {
+                fontFamily: document.getElementById('fontFamilySelect').value,
+                fontSize: document.getElementById('fontSizeSelect').value,
+                lineHeight: document.getElementById('lineHeightSelect').value
+            };
+            localStorage.setItem('noteflow_font_settings', JSON.stringify(settings));
+        }
+
+        function loadFontSettings() {
+            const settings = JSON.parse(localStorage.getItem('noteflow_font_settings') || '{}');
+            
+            if (settings.fontFamily) {
+                document.getElementById('fontFamilySelect').value = settings.fontFamily;
+                if (document.getElementById('fontFamilySelectToolbar')) {
+                    document.getElementById('fontFamilySelectToolbar').value = settings.fontFamily;
+                }
+            }
+            if (settings.fontSize) {
+                document.getElementById('fontSizeSelect').value = settings.fontSize;
+                if (document.getElementById('fontSizeSelectToolbar')) {
+                    document.getElementById('fontSizeSelectToolbar').value = settings.fontSize;
+                }
+            }
+            if (settings.lineHeight) {
+                document.getElementById('lineHeightSelect').value = settings.lineHeight;
+                if (document.getElementById('lineHeightSelectToolbar')) {
+                    document.getElementById('lineHeightSelectToolbar').value = settings.lineHeight;
+                }
+            }
+            
+            // Apply settings
+            const editor = document.getElementById('editor');
+            if (settings.fontFamily) editor.style.fontFamily = settings.fontFamily;
+            if (settings.fontSize) editor.style.fontSize = settings.fontSize;
+            if (settings.lineHeight) editor.style.lineHeight = settings.lineHeight;
+        }
+
+        // Animation Settings Functions
+        function toggleAnimations() {
+            const enabled = document.getElementById('animationsToggle').checked;
+            if (enabled) {
+                document.body.classList.add('animations-enabled');
+            } else {
+                document.body.classList.remove('animations-enabled');
+            }
+            localStorage.setItem('noteflow_animations', enabled ? 'true' : 'false');
+        }
+
+        function loadAnimationSettings() {
+            const enabled = localStorage.getItem('noteflow_animations') !== 'false';
+            document.getElementById('animationsToggle').checked = enabled;
+            if (document.getElementById('animationsToggleToolbar')) {
+                document.getElementById('animationsToggleToolbar').checked = enabled;
+            }
+            if (enabled) {
+                document.body.classList.add('animations-enabled');
+            }
+        }
+
+        // Toolbar Font Settings Functions
+        function toggleFontPanel() {
+            const panel = document.getElementById('fontSettingsPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                syncToolbarFontSettings();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        function syncToolbarFontSettings() {
+            // Sync toolbar dropdowns with theme panel dropdowns
+            const fontFamily = document.getElementById('fontFamilySelect').value;
+            const fontSize = document.getElementById('fontSizeSelect').value;
+            const lineHeight = document.getElementById('lineHeightSelect').value;
+            const animations = document.getElementById('animationsToggle').checked;
+            
+            document.getElementById('fontFamilySelectToolbar').value = fontFamily;
+            document.getElementById('fontSizeSelectToolbar').value = fontSize;
+            document.getElementById('lineHeightSelectToolbar').value = lineHeight;
+            document.getElementById('animationsToggleToolbar').checked = animations;
+        }
+
+        function applyFontSettingsFromToolbar() {
+            const fontFamily = document.getElementById('fontFamilySelectToolbar').value;
+            const fontSize = document.getElementById('fontSizeSelectToolbar').value;
+            const lineHeight = document.getElementById('lineHeightSelectToolbar').value;
+            
+            const editor = document.getElementById('editor');
+            editor.style.fontFamily = fontFamily;
+            editor.style.fontSize = fontSize;
+            editor.style.lineHeight = lineHeight;
+            
+            // Sync with theme panel
+            document.getElementById('fontFamilySelect').value = fontFamily;
+            document.getElementById('fontSizeSelect').value = fontSize;
+            document.getElementById('lineHeightSelect').value = lineHeight;
+            
+            // Save settings
+            saveFontSettings();
+        }
+
+        function toggleAnimationsFromToolbar() {
+            const enabled = document.getElementById('animationsToggleToolbar').checked;
+            document.getElementById('animationsToggle').checked = enabled;
+            if (enabled) {
+                document.body.classList.add('animations-enabled');
+            } else {
+                document.body.classList.remove('animations-enabled');
+            }
+            localStorage.setItem('noteflow_animations', enabled ? 'true' : 'false');
+        }
+
+        // Close font panel when clicking outside
+        document.addEventListener('click', function(e) {
+            const panel = document.getElementById('fontSettingsPanel');
+            const btn = e.target.closest('.toolbar-dropdown');
+            if (panel && panel.style.display === 'block' && !btn) {
+                panel.style.display = 'none';
+            }
+        });
         
         // --- HELP PAGE ---
         function ensureHelpPage() {
@@ -2058,55 +4156,289 @@
                     title: 'Help & Docs',
                     collapsed: false,
                     content: `
-                        <h2>Welcome to <strong>NoteFlow Help</strong> 📚</h2>
-                        <p>This page guides you through using NoteFlow effectively.</p>
-                        
-                        <h3><i class="fas fa-sitemap"></i> Creating Hierarchical Pages</h3>
-                        <p>You can nest pages by separating levels with <code>::</code> in the page title. For example:</p>
-                        <ul>
-                          <li><code>Projects</code> (parent)</li>
-                          <li><code>Projects::Website Redesign</code> (child)</li>
-                          <li><code>Projects::Website Redesign::Sprint Backlog</code> (grand‑child)</li>
-                        </ul>
-                        <p>The sidebar will automatically indent pages to reflect this structure.</p>
+<h1>📚 NoteFlow Help & Documentation</h1>
+<p>Welcome to NoteFlow - your personal, privacy-first note-taking workspace. This guide covers everything you need to know.</p>
 
-                        <h3><i class="fas fa-folder-tree"></i> Collapsing & Expanding Pages</h3>
-                        <p>Parent pages will have a chevron icon <i class="fas fa-chevron-down"></i> next to them. Click this icon to collapse or expand the list of child pages, helping you keep your workspace tidy.</p>
-                        
-                        <h3><i class="fas fa-edit"></i> Renaming and Deleting Pages</h3>
-                        <p>In the sidebar, hover over any page to reveal two icons:</p>
-                        <ul>
-                          <li><i class="fas fa-pencil-alt"></i> &mdash; Click to rename a page. Renaming a parent will automatically update the paths of all its children.</li>
-                          <li><i class="fas fa-trash"></i> &mdash; Click to delete a page. This action is permanent.</li>
-                        </ul>
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
 
-                        <h3><i class="fab fa-google-drive"></i> Google Drive Backup</h3>
-                        <p>You can connect NoteFlow to Google Drive to back up your workspace. This requires setting up API credentials.</p>
-                        <ol>
-                          <li>Open the Google Cloud Console &rarr; <em>APIs & Services</em> &rarr; <em>Credentials</em>.</li>
-                          <li>Create an <strong>OAuth 2.0 Client ID</strong> for a <em>Web application</em>.</li>
-                          <li>Copy the generated <code>CLIENT_ID</code> and <code>API_KEY</code>.</li>
-                          <li>In the app's script, replace the placeholder values.</li>
-                          <li>Uncomment <code>initGoogleDrive();</code> inside the <code>DOMContentLoaded</code> listener.</li>
-                        </ol>
+<h2>📄 Page Management</h2>
 
-                        <h3><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
-                        <ul>
-                          <li><kbd>Ctrl/Cmd + S</kbd> &mdash; Save locally</li>
-                          <li><kbd>Ctrl/Cmd + N</kbd> &mdash; New page</li>
-                          <li><kbd>Ctrl/Cmd + Shift + T</kbd> &mdash; Open theme panel</li>
-                          <li><kbd>Esc</kbd> &mdash; Close modals and panels</li>
-                          <li><kbd>Enter</kbd> &mdash; Add new todo (when in todo input field)</li>
-                        </ul>
+<h3>Creating Pages</h3>
+<p>Click the <strong>"+ New Page"</strong> button in the sidebar to create a new page. You can optionally select a template to start with pre-formatted content.</p>
 
-                        <h3><i class="fas fa-check-square"></i> Todo List</h3>
-                        <p>The todo list is always visible in the left sidebar below your pages. Add tasks, check them off, delete them, and they'll persist automatically.</p>
+<h3>Hierarchical Pages (Nesting)</h3>
+<p>Create nested page structures using <code>::</code> in the page title:</p>
+<ul>
+  <li><code>Projects</code> - Parent page</li>
+  <li><code>Projects::Website</code> - Child page</li>
+  <li><code>Projects::Website::Tasks</code> - Grandchild page</li>
+</ul>
+<p>The sidebar will automatically indent and organize these pages. You can also drag and drop pages to reorganize them.</p>
 
-                        <h3><i class="fas fa-clock"></i> Time Widget</h3>
-                        <p>The toolbar displays a live time widget with a clock icon. Click the gear icon to toggle between 12/24 hour format and show/hide seconds.</p>
+<h3>Collapsing & Expanding</h3>
+<p>Parent pages show a <strong>chevron icon (▶/▼)</strong>. Click it to collapse or expand child pages, keeping your sidebar tidy.</p>
 
-                        <h3><i class="fas fa-palette"></i> Theme System</h3>
-                        <p>Choose from 6 themes: Default (light), Dark, Sepia, Forest, Ocean, and Sunset. Apply to current page, all pages, or specific pages.</p>
+<h3>Renaming Pages</h3>
+<p>Hover over any page in the sidebar and click the <strong>pencil icon ✏️</strong>. When you rename a parent page, all child pages are automatically updated.</p>
+
+<h3>Deleting Pages</h3>
+<p>Hover over a page and click the <strong>trash icon 🗑️</strong>. This will delete the page and all its children. <em>This action cannot be undone.</em></p>
+
+<h3>Favorite Pages ⭐</h3>
+<p>Click the <strong>star icon</strong> on any page to mark it as your favorite. Your favorite page will automatically load when you open NoteFlow. Only one page can be favorited at a time.</p>
+
+<h3>Duplicate Pages</h3>
+<p>Click the <strong>copy icon 📋</strong> to create an exact copy of a page with all its content.</p>
+
+<h3>Page Icons (Emoji)</h3>
+<p>Click the emoji icon next to any page title to open the emoji picker. Choose from <strong>200+ emojis</strong> across 13 categories. Use the search bar to find specific emojis quickly.</p>
+
+<h3>Breadcrumb Navigation</h3>
+<p>When viewing a nested page, breadcrumbs appear above the title showing the full path. Click any parent name to navigate directly to that page.</p>
+
+<h3>Search</h3>
+<p>Use the search bar at the top of the sidebar to find pages. It searches both <strong>page titles and content</strong>.</p>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>📝 Templates</h2>
+<p>When creating a new page, select from 7 pre-built templates:</p>
+<ul>
+  <li><strong>Blank Page</strong> - Start with an empty page</li>
+  <li><strong>Meeting Notes</strong> - Date, attendees, agenda, discussion points, action items</li>
+  <li><strong>Project Plan</strong> - Overview, goals with checkboxes, timeline table, resources</li>
+  <li><strong>To-Do List</strong> - High/Medium/Low priority sections with checkboxes</li>
+  <li><strong>Daily Journal</strong> - Morning intentions, notes, gratitude list, evening reflection</li>
+  <li><strong>Weekly Review</strong> - Weekly goals, day-by-day breakdown, wins, areas for improvement</li>
+  <li><strong>Study Notes</strong> - Key concepts, detailed notes, examples, questions, summary</li>
+</ul>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>✏️ Editor & Formatting</h2>
+
+<h3>Text Formatting (Toolbar)</h3>
+<ul>
+  <li><strong>B</strong> - Bold text</li>
+  <li><strong>I</strong> - Italic text</li>
+  <li><strong>U</strong> - Underline text</li>
+  <li><strong>S</strong> - Strikethrough text</li>
+  <li><strong>H1, H2, H3</strong> - Headings (large to small)</li>
+  <li><strong>Quote</strong> - Block quote for citations</li>
+  <li><strong>Code</strong> - Inline code or code blocks</li>
+</ul>
+
+<h3>Lists</h3>
+<ul>
+  <li><strong>Bullet List</strong> - Unordered list with bullet points</li>
+  <li><strong>Numbered List</strong> - Ordered list with numbers</li>
+</ul>
+
+<h3>Tables</h3>
+<p>Click the <strong>table icon</strong> in the toolbar, enter the number of rows and columns, and a table will be inserted. Click inside cells to edit them.</p>
+
+<h3>Images</h3>
+<p>Click the <strong>image icon</strong> to insert images. You can:</p>
+<ul>
+  <li>Paste an image URL</li>
+  <li>Upload an image from your computer</li>
+</ul>
+
+<h3>Checklists</h3>
+<p>Click the <strong>checklist icon ☑️</strong> to insert interactive checkboxes. Click the checkbox to toggle it on/off.</p>
+
+<h3>Collapsible Sections</h3>
+<p>Click the <strong>collapse icon</strong> to create expandable/collapsible sections. Great for FAQs, long content, or hiding details until needed.</p>
+
+<h3>Page Links</h3>
+<p>Click the <strong>link icon</strong> to insert a link to another page in your workspace. Clicking the link will navigate to that page.</p>
+
+<h3>Word Count</h3>
+<p>The toolbar displays a live word count for the current page.</p>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>✅ Todo List</h2>
+<p>The todo list is located in the sidebar below your pages. It's always visible and persists across sessions.</p>
+
+<h3>Adding Tasks</h3>
+<p>Type in the input field and press <strong>Enter</strong> or click the <strong>+ button</strong>.</p>
+
+<h3>Priority Levels</h3>
+<ul>
+  <li><strong>🔴 High</strong> - Urgent tasks (red indicator)</li>
+  <li><strong>🟡 Medium</strong> - Normal priority (yellow indicator)</li>
+  <li><strong>🟢 Low</strong> - Can wait (green indicator)</li>
+</ul>
+
+<h3>Due Dates</h3>
+<p>Set due dates for tasks. They display as:</p>
+<ul>
+  <li><strong>Today</strong> - Due today</li>
+  <li><strong>Tomorrow</strong> - Due tomorrow</li>
+  <li><strong>Overdue</strong> - Past due (shown in red)</li>
+  <li>Otherwise shows the formatted date</li>
+</ul>
+
+<h3>Categories</h3>
+<p>Tag tasks with custom categories (Work, Personal, etc.) for organization.</p>
+
+<h3>Recurring Tasks</h3>
+<p>Set tasks to repeat:</p>
+<ul>
+  <li><strong>Daily</strong> - Repeats every day</li>
+  <li><strong>Weekly</strong> - Repeats every week</li>
+  <li><strong>Monthly</strong> - Repeats every month</li>
+</ul>
+
+<h3>Filters</h3>
+<p>Filter your todo list by priority, category, or completion status using the filter panel.</p>
+
+<h3>Progress Bar</h3>
+<p>Shows visual completion percentage of your tasks.</p>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>🎨 Themes & Customization</h2>
+
+<h3>Theme Selection</h3>
+<p>Click the <strong>gear icon ⚙️</strong> in the toolbar to open the theme panel. Choose from 6 themes:</p>
+<ul>
+  <li><strong>Default</strong> - Clean light theme</li>
+  <li><strong>Dark</strong> - Dark mode, easy on the eyes</li>
+  <li><strong>Sepia</strong> - Warm, paper-like appearance</li>
+  <li><strong>Forest</strong> - Calming green tones</li>
+  <li><strong>Ocean</strong> - Cool blue colors</li>
+  <li><strong>Sunset</strong> - Warm orange and pink tones</li>
+</ul>
+
+<h3>Applying Themes</h3>
+<p>You can apply themes to:</p>
+<ul>
+  <li><strong>Current page only</strong></li>
+  <li><strong>All pages</strong></li>
+  <li><strong>Selected pages</strong> (choose specific pages)</li>
+</ul>
+
+<h3>Font Customization</h3>
+<ul>
+  <li><strong>Font Family</strong> - Choose from Inter, Georgia, Merriweather, Roboto Mono, etc.</li>
+  <li><strong>Font Size</strong> - Adjust text size</li>
+  <li><strong>Line Height</strong> - Adjust spacing between lines</li>
+</ul>
+
+<h3>Animations</h3>
+<p>Toggle smooth animations on or off for a snappier or more fluid experience.</p>
+
+<h3>Time Widget</h3>
+<p>The toolbar shows a live clock. Click the gear icon next to it to:</p>
+<ul>
+  <li>Toggle between 12-hour and 24-hour format</li>
+  <li>Show or hide seconds</li>
+</ul>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>💾 Saving & Data Management</h2>
+
+<h3>Auto-Save</h3>
+<p>NoteFlow automatically saves your work every <strong>30 seconds</strong> and whenever you make changes. Look for "Saving..." and "Saved" indicators at the bottom of the screen.</p>
+
+<h3>Save Locally (Manual)</h3>
+<p>Click the <strong>"Save Locally"</strong> button in the bottom-right to manually save all pages to your browser's localStorage. Your data stays on your computer - nothing is sent to any server.</p>
+
+<h3>Export</h3>
+<p>Click the <strong>"Export"</strong> button to download your entire workspace as a <strong>JSON file</strong>. This includes:</p>
+<ul>
+  <li>All pages and their content</li>
+  <li>Page icons and themes</li>
+  <li>Hierarchy structure</li>
+  <li>Timestamps</li>
+</ul>
+<p><em>Tip: Export regularly as a backup!</em></p>
+
+<h3>Import</h3>
+<p>Click the <strong>"Import"</strong> button to restore a previously exported JSON file. This will:</p>
+<ul>
+  <li>Replace all current pages with the imported data</li>
+  <li>Restore the exact state from when you exported</li>
+</ul>
+<p><em>Warning: Importing will overwrite your current pages!</em></p>
+
+<h3>Google Drive Backup</h3>
+<p>You can connect NoteFlow to your personal Google Drive for cloud backup. This requires one-time setup:</p>
+<ol>
+  <li>Go to <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a></li>
+  <li>Create a new project or select existing</li>
+  <li>Go to <strong>APIs & Services → Credentials</strong></li>
+  <li>Create an <strong>OAuth 2.0 Client ID</strong> for Web application</li>
+  <li>Copy the <code>CLIENT_ID</code> and <code>API_KEY</code></li>
+  <li>Replace the placeholder values in NoteFlow's script</li>
+  <li>Click <strong>"Save to Drive"</strong> to backup</li>
+</ol>
+<p><em>Your data goes to YOUR Google Drive - NoteFlow has no servers and cannot access your data.</em></p>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>⌨️ Keyboard Shortcuts</h2>
+<table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+  <tr style="border-bottom: 2px solid var(--border);">
+    <th style="text-align: left; padding: 10px;">Shortcut</th>
+    <th style="text-align: left; padding: 10px;">Action</th>
+  </tr>
+  <tr style="border-bottom: 1px solid var(--border);">
+    <td style="padding: 10px;"><kbd>Ctrl/Cmd + B</kbd></td>
+    <td style="padding: 10px;">Bold text</td>
+  </tr>
+  <tr style="border-bottom: 1px solid var(--border);">
+    <td style="padding: 10px;"><kbd>Ctrl/Cmd + I</kbd></td>
+    <td style="padding: 10px;">Italic text</td>
+  </tr>
+  <tr style="border-bottom: 1px solid var(--border);">
+    <td style="padding: 10px;"><kbd>Ctrl/Cmd + U</kbd></td>
+    <td style="padding: 10px;">Underline text</td>
+  </tr>
+  <tr>
+    <td style="padding: 10px;"><kbd>Enter</kbd></td>
+    <td style="padding: 10px;">Add todo (when in todo input)</td>
+  </tr>
+</table>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>🔒 Privacy & Data</h2>
+<p>NoteFlow is a <strong>privacy-first</strong> application:</p>
+<ul>
+  <li>✅ All data stored locally in your browser</li>
+  <li>✅ No accounts or sign-ups required</li>
+  <li>✅ No data sent to any servers</li>
+  <li>✅ No tracking or analytics</li>
+  <li>✅ Works completely offline</li>
+  <li>✅ Google Drive backup uses YOUR Drive, not ours</li>
+  <li>✅ <strong>Open Source</strong> - Full source code available on <a href="https://github.com/tanujranjith/Notion-local-saving-clone" target="_blank" style="color: var(--accent);">GitHub</a> for anyone to audit</li>
+</ul>
+<p><em>Your notes are yours alone.</em></p>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<h2>💡 Tips & Tricks</h2>
+<ul>
+  <li><strong>Drag & Drop</strong> - Reorder pages by dragging them in the sidebar</li>
+  <li><strong>Quick Search</strong> - Use the search bar to jump to any page instantly</li>
+  <li><strong>Export Backups</strong> - Export your data regularly as a safety backup</li>
+  <li><strong>Use Templates</strong> - Start with a template to save time on common note types</li>
+  <li><strong>Collapse Sections</strong> - Use collapsible sections for long documents</li>
+  <li><strong>Page Links</strong> - Create a "Table of Contents" page that links to other pages</li>
+  <li><strong>Star Your Dashboard</strong> - Star your most important page to load it automatically</li>
+</ul>
+
+<hr style="border: none; border-top: 2px solid var(--border); margin: 25px 0;">
+
+<p style="text-align: center; color: var(--text-secondary); margin-top: 30px; font-size: 14px;">
+  <strong>NoteFlow v2.0</strong><br>
+  Your personal knowledge workspace ❤️<br>
+  <em>December 2025</em>
+</p>
                     `,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
@@ -2144,11 +4476,14 @@
 
         function confirmNewPage() {
             const name = document.getElementById('newPageName').value.trim();
+            const templateId = document.getElementById('newPageTemplate').value;
             if (name) {
+                const template = pageTemplates[templateId] || pageTemplates['blank'];
                 const newPage = {
                     id: generateId(),
                     title: name,
-                    content: '',
+                    content: template.content,
+                    icon: template.icon,
                     collapsed: false,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
@@ -2159,6 +4494,8 @@
                 renderPagesList();
                 loadPage(newPage.id);
                 closeModal('newPageModal');
+                // Reset template selector
+                document.getElementById('newPageTemplate').value = 'blank';
                 showToast('Page created successfully!');
             }
         }
@@ -2224,6 +4561,8 @@
                 document.getElementById('editor').innerHTML = page.content;
                 
                 loadPageTheme(pageId);
+                renderBreadcrumbs(page);
+                renderTagsContainer();
                 
                 document.querySelectorAll('.page-item').forEach(item => {
                     item.classList.toggle('active', item.dataset.pageId === pageId);
@@ -2231,6 +4570,48 @@
                 
                 updateWordCount();
             }
+        }
+
+        function renderBreadcrumbs(page) {
+            const breadcrumbsEl = document.getElementById('breadcrumbs');
+            if (!breadcrumbsEl) return;
+            
+            const parts = page.title.split('::');
+            
+            // If no hierarchy, hide breadcrumbs
+            if (parts.length <= 1) {
+                breadcrumbsEl.innerHTML = '';
+                return;
+            }
+            
+            let html = '<span class="breadcrumb-item"><i class="fas fa-home breadcrumb-link" onclick="goToFirstPage()" title="Home"></i></span>';
+            
+            // Build breadcrumb path (all parts except the last one)
+            let currentPath = '';
+            for (let i = 0; i < parts.length - 1; i++) {
+                currentPath = i === 0 ? parts[i] : currentPath + '::' + parts[i];
+                const pathCopy = currentPath;
+                const parentPage = pages.find(p => p.title === pathCopy);
+                
+                html += '<span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>';
+                
+                if (parentPage) {
+                    html += `<span class="breadcrumb-item"><span class="breadcrumb-link" onclick="loadPage('${parentPage.id}')">${parts[i]}</span></span>`;
+                } else {
+                    html += `<span class="breadcrumb-item"><span class="breadcrumb-current">${parts[i]}</span></span>`;
+                }
+            }
+            
+            // Add current page (last part)
+            html += '<span class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></span>';
+            html += `<span class="breadcrumb-item"><span class="breadcrumb-current">${parts[parts.length - 1]}</span></span>`;
+            
+            breadcrumbsEl.innerHTML = html;
+        }
+
+        function goToFirstPage() {
+            const firstPage = pages.find(p => p.id !== 'help_page');
+            if (firstPage) loadPage(firstPage.id);
         }
 
         function savePage() {
@@ -2249,8 +4630,8 @@
                 page.updatedAt = new Date().toISOString();
                 savePagesToLocal();
                 // A soft-render to update title in sidebar without full redraw
-                const pageItemSpan = document.querySelector(`.page-item[data-page-id="${currentPageId}"] span`);
-                if (pageItemSpan) pageItemSpan.textContent = titleInput;
+                const pageTitleSpan = document.querySelector(`.page-item[data-page-id="${currentPageId}"] .page-title-text`);
+                if (pageTitleSpan) pageTitleSpan.textContent = titleInput;
                 
                 setTimeout(() => updateSaveStatus('saved'), 800);
             }
@@ -2282,6 +4663,209 @@
                 renderPagesList();
                 showToast('Page deleted successfully!');
             }
+        }
+
+        function getDefaultPage() {
+            const defaultPageId = localStorage.getItem('noteflow_default_page');
+            if (defaultPageId) {
+                const page = pages.find(p => p.id === defaultPageId);
+                if (page) return page.id;
+            }
+            // Return first non-help page
+            const firstPage = pages.find(p => p.id !== 'help_page');
+            return firstPage ? firstPage.id : null;
+        }
+
+        // Toggle Star/Favorite Page Function
+        function toggleStar(pageId) {
+            const page = pages.find(p => p.id === pageId);
+            if (!page) return;
+            
+            // If this page is already starred, unstar it
+            if (page.starred) {
+                page.starred = false;
+                localStorage.removeItem('noteflow_favorite_page');
+                showToast('Removed from favorites');
+            } else {
+                // Unstar all other pages first
+                pages.forEach(p => p.starred = false);
+                // Star this page
+                page.starred = true;
+                localStorage.setItem('noteflow_favorite_page', pageId);
+                showToast('Set as favorite - will load on startup!');
+            }
+            
+            savePagesToLocal();
+            renderPagesList();
+        }
+
+        // Duplicate Page Function
+        function duplicatePage(pageId) {
+            const originalPage = pages.find(p => p.id === pageId);
+            if (!originalPage) return;
+            
+            const newPage = {
+                id: generateId(),
+                title: originalPage.title + ' (Copy)',
+                content: originalPage.content,
+                icon: originalPage.icon,
+                theme: originalPage.theme,
+                customTheme: originalPage.customTheme ? {...originalPage.customTheme} : null,
+                collapsed: false,
+                starred: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            pages.push(newPage);
+            savePagesToLocal();
+            renderPagesList();
+            loadPage(newPage.id);
+            showToast('Page duplicated!');
+        }
+
+        // Template Functions
+        const pageTemplates = {
+            blank: {
+                name: 'Blank Page',
+                icon: '📄',
+                content: ''
+            },
+            meeting: {
+                name: 'Meeting Notes',
+                icon: '📅',
+                content: `<h2>Meeting Notes</h2>
+<p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+<p><strong>Attendees:</strong> </p>
+<h3>Agenda</h3>
+<ul><li>Topic 1</li><li>Topic 2</li><li>Topic 3</li></ul>
+<h3>Discussion</h3>
+<p><br></p>
+<h3>Action Items</h3>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Action 1 - Owner</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Action 2 - Owner</span></div>
+<h3>Next Steps</h3>
+<p><br></p>`
+            },
+            project: {
+                name: 'Project Plan',
+                icon: '🚀',
+                content: `<h2>Project: Your Project Name</h2>
+<h3>Overview</h3>
+<p>Brief description of the project...</p>
+<h3>Goals</h3>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Goal 1</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Goal 2</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Goal 3</span></div>
+<h3>Timeline</h3>
+<table><thead><tr><th>Phase</th><th>Start</th><th>End</th><th>Status</th></tr></thead><tbody>
+<tr><td>Planning</td><td></td><td></td><td>🟡 In Progress</td></tr>
+<tr><td>Development</td><td></td><td></td><td>⚪ Not Started</td></tr>
+<tr><td>Testing</td><td></td><td></td><td>⚪ Not Started</td></tr>
+<tr><td>Launch</td><td></td><td></td><td>⚪ Not Started</td></tr></tbody></table>
+<h3>Resources</h3>
+<ul><li>Resource 1</li><li>Resource 2</li></ul>
+<h3>Notes</h3>
+<p><br></p>`
+            },
+            todo: {
+                name: 'To-Do List',
+                icon: '✅',
+                content: `<h2>To-Do List</h2>
+<h3>🔴 High Priority</h3>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Task 1</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Task 2</span></div>
+<h3>🟡 Medium Priority</h3>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Task 3</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Task 4</span></div>
+<h3>🟢 Low Priority</h3>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Task 5</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Task 6</span></div>
+<h3>✅ Completed</h3>
+<div class="checklist-item"><input type="checkbox" checked><span contenteditable="true">Completed task example</span></div>`
+            },
+            journal: {
+                name: 'Daily Journal',
+                icon: '📔',
+                content: `<h2>📔 ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h2>
+<h3>🌅 Morning Intentions</h3>
+<p>What do I want to accomplish today?</p>
+<h3>📝 Notes & Thoughts</h3>
+<p><br></p>
+<h3>🙏 Gratitude</h3>
+<ul><li>I'm grateful for...</li><li></li><li></li></ul>
+<h3>🌙 Evening Reflection</h3>
+<p>What went well today? What could be improved?</p>`
+            },
+            weekly: {
+                name: 'Weekly Review',
+                icon: '📊',
+                content: `<h2>📊 Week of ${new Date().toLocaleDateString()}</h2>
+<h3>🎯 This Week's Goals</h3>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Goal 1</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Goal 2</span></div>
+<div class="checklist-item"><input type="checkbox"><span contenteditable="true">Goal 3</span></div>
+<h3>📅 Day by Day</h3>
+<p><strong>Monday:</strong> </p>
+<p><strong>Tuesday:</strong> </p>
+<p><strong>Wednesday:</strong> </p>
+<p><strong>Thursday:</strong> </p>
+<p><strong>Friday:</strong> </p>
+<h3>🏆 Wins</h3>
+<ul><li></li></ul>
+<h3>📈 Areas for Improvement</h3>
+<ul><li></li></ul>
+<h3>💡 Ideas & Notes</h3>
+<p><br></p>`
+            },
+            notes: {
+                name: 'Study Notes',
+                icon: '📚',
+                content: `<h2>📚 Subject/Topic</h2>
+<h3>Key Concepts</h3>
+<ul><li><strong>Concept 1:</strong> Definition...</li><li><strong>Concept 2:</strong> Definition...</li></ul>
+<h3>Detailed Notes</h3>
+<p><br></p>
+<h3>Examples</h3>
+<p><br></p>
+<h3>Questions</h3>
+<ul><li>Question to explore...</li></ul>
+<h3>Summary</h3>
+<p><br></p>
+<h3>Resources & Links</h3>
+<ul><li></li></ul>`
+            }
+        };
+
+        function showTemplateModal() {
+            document.getElementById('templateModal').classList.add('active');
+        }
+
+        function createFromTemplate(templateKey) {
+            const template = pageTemplates[templateKey];
+            if (!template) return;
+            
+            const pageName = prompt('Page name:', template.name);
+            if (!pageName) return;
+            
+            const newPage = {
+                id: generateId(),
+                title: pageName,
+                content: template.content,
+                icon: template.icon,
+                theme: globalTheme,
+                collapsed: false,
+                starred: false,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            pages.push(newPage);
+            savePagesToLocal();
+            renderPagesList();
+            loadPage(newPage.id);
+            closeModal('templateModal');
+            showToast('Page created from template!');
         }
 
         // Hierarchical Sidebar Rendering
@@ -2382,16 +4966,27 @@
 
                 const collapseIcon = hasChildren 
                     ? `<i class="fas ${page.collapsed ? 'fa-chevron-right' : 'fa-chevron-down'}" style="width:14px; text-align:center; cursor:pointer;" onclick="event.stopPropagation(); toggleCollapse('${page.id}')"></i>`
-                    : `<i class="fas fa-file-alt" style="width:14px; text-align:center;"></i>`;
+                    : '';
                 
                 const themeIndicator = (page.theme && page.theme !== 'default') 
                     ? `<div class="page-theme-indicator" style="background:${themeColor};" title="Custom theme applied"></div>` : '';
 
+                // Page icon - show custom emoji or default file icon
+                const iconDisplay = page.icon || '📄';
+                const pageIcon = `<span class="page-icon" onclick="event.stopPropagation(); openEmojiPicker('${page.id}')" title="Click to change icon">${iconDisplay}</span>`;
+
+                // Star indicator for favorited pages
+                const starIndicator = page.starred ? '<i class="fas fa-star page-star-indicator" title="Favorite"></i>' : '';
+
                 pageItem.innerHTML = `
                     ${collapseIcon}
-                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${displayTitle}</span>
+                    ${pageIcon}
+                    <span class="page-title-text">${displayTitle}</span>
+                    ${starIndicator}
                     ${themeIndicator}
                     <div class="page-item-icons">
+                         <i class="fas ${page.starred ? 'fa-star starred' : 'fa-star'}" title="${page.starred ? 'Remove from favorites' : 'Add to favorites'}" onclick="event.stopPropagation(); toggleStar('${page.id}')"></i>
+                         <i class="fas fa-copy" title="Duplicate" onclick="event.stopPropagation(); duplicatePage('${page.id}')"></i>
                          <i class="fas fa-pencil-alt" title="Rename" onclick="event.stopPropagation(); showRenameModal('${page.id}')"></i>
                          <i class="fas fa-trash" title="Delete" onclick="event.stopPropagation(); deletePage('${page.id}')"></i>
                     </div>
@@ -2625,8 +5220,190 @@
         // Text Formatting Functions
         function formatText(command) {
             document.execCommand(command, false, null);
-            document.getElementById('editor').focus();
         }
+
+        // Emoji Picker Functions
+        const emojiCategories = {
+            'Common': ['📄', '📝', '📋', '📁', '📂', '🗂️', '📌', '📎', '📊', '📈', '📉', '💼', '🎯', '✅', '❌', '⭐'],
+            'Objects': ['🔥', '💡', '🎨', '🎵', '🎮', '📱', '💻', '🖥️', '🏠', '🏢', '🌍', '✈️', '🚀', '⚡', '🔧', '🔨', '📚', '📖', '✏️', '🖊️', '🔍', '🔎', '💬', '💭', '📷', '🎬', '🎤', '🎧', '📻', '⏰', '⌚', '📿'],
+            'Hearts': ['❤️', '🧡', '�', '💚', '�', '💜', '🖤', '🤍', '�', '💕', '💞', '💓', '💗', '💖', '💘', '💝'],
+            'Nature': ['🌟', '🌙', '☀️', '🌈', '🌸', '🌺', '🌻', '🍀', '🌲', '🌴', '🍁', '🍂', '🌊', '🔥', '❄️', '⛅', '🌤️', '🌧️', '⚡', '🌪️', '🦋', '🐝', '🌹', '🌷'],
+            'Food': ['🍎', '🍊', '🍋', '🍇', '🍓', '🫐', '🍑', '🍒', '🥑', '🥕', '🌽', '🍕', '🍔', '🍟', '🌮', '🍜', '🍣', '🍰', '🧁', '🍩', '🍪', '☕', '🍵', '🥤'],
+            'Activities': ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🎱', '🎳', '🏓', '🥊', '🎿', '⛷️', '🏂', '🏋️', '🧘', '🎪', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁'],
+            'Travel': ['🚗', '🚕', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '✈️', '🚀', '🛸', '🚁', '⛵', '🚢', '🏰', '🗼', '🗽', '🏛️', '⛪', '🕌', '🛕', '⛩️', '🏔️', '🗻'],
+            'Symbols': ['✨', '💫', '⭐', '�', '💥', '💢', '💦', '💨', '🔔', '🎵', '🎶', '💤', '💭', '👁️‍🗨️', '🗯️', '💬', '♠️', '♣️', '♥️', '♦️', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '⚫', '⚪'],
+            'Celebration': ['�🎉', '🎊', '�', '🎁', '🎀', '�🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '👑', '💎', '🔮', '🧿', '�', '🪄', '✨', '💫', '🌠', '🎆', '🎇', '🧨', '🪅'],
+            'People': ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😌', '😍', '🥰', '😘', '😎', '🤓', '🧐', '🤔', '🤨', '😐', '😑', '😶', '🙄'],
+            'Hands': ['👍', '👎', '👊', '✊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✌️', '🤞', '🤟', '🤘', '👌', '🤌', '👈', '👉', '👆', '👇', '☝️', '✋'],
+            'Animals': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺']
+        };
+
+        let currentEmojiPageId = null;
+        let currentEmojiCategory = 'All';
+        let emojiSearchQuery = '';
+
+        // Flatten all emojis for search
+        function getAllEmojis() {
+            let all = [];
+            Object.values(emojiCategories).forEach(arr => {
+                all = all.concat(arr);
+            });
+            return [...new Set(all)]; // Remove duplicates
+        }
+
+        function openEmojiPicker(pageId) {
+            currentEmojiPageId = pageId;
+            currentEmojiCategory = 'All';
+            emojiSearchQuery = '';
+            const picker = document.getElementById('emojiPicker');
+            
+            // Build search bar, category tabs and grid
+            let html = '<div class="emoji-search-container">';
+            html += '<input type="text" class="emoji-search" id="emojiSearch" placeholder="Search emojis..." oninput="searchEmojis(this.value)">';
+            html += '</div>';
+            
+            const categories = ['All', ...Object.keys(emojiCategories)];
+            html += '<div class="emoji-categories">';
+            categories.forEach(cat => {
+                html += `<button class="emoji-cat-btn ${cat === currentEmojiCategory ? 'active' : ''}" onclick="switchEmojiCategory('${cat}')">${cat}</button>`;
+            });
+            html += '</div>';
+            html += '<div class="emoji-grid" id="emojiGrid"></div>';
+            html += '<button class="emoji-remove-btn" onclick="removePageIcon()"><i class="fas fa-times"></i> Remove Icon</button>';
+            
+            picker.innerHTML = html;
+            renderEmojiGrid();
+            
+            // Position picker near the click
+            const pageItem = document.querySelector(`[data-page-id="${pageId}"]`);
+            if (pageItem) {
+                const rect = pageItem.getBoundingClientRect();
+                picker.style.top = Math.min(rect.bottom + 5, window.innerHeight - 400) + 'px';
+                picker.style.left = Math.min(rect.left, window.innerWidth - 340) + 'px';
+            }
+            
+            picker.classList.add('active');
+            
+            // Focus search input
+            setTimeout(() => {
+                const searchInput = document.getElementById('emojiSearch');
+                if (searchInput) searchInput.focus();
+            }, 100);
+        }
+
+        function searchEmojis(query) {
+            emojiSearchQuery = query.toLowerCase();
+            renderEmojiGrid();
+        }
+
+        function switchEmojiCategory(category) {
+            currentEmojiCategory = category;
+            emojiSearchQuery = '';
+            document.getElementById('emojiSearch').value = '';
+            document.querySelectorAll('.emoji-cat-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === category);
+            });
+            renderEmojiGrid();
+        }
+
+        function renderEmojiGrid() {
+            const grid = document.getElementById('emojiGrid');
+            if (!grid) return;
+            
+            let emojis;
+            if (currentEmojiCategory === 'All') {
+                emojis = getAllEmojis();
+            } else {
+                emojis = emojiCategories[currentEmojiCategory] || [];
+            }
+            
+            // Filter by search query if any
+            if (emojiSearchQuery) {
+                // Simple search - show all emojis that match commonly searched terms
+                const searchTerms = {
+                    'heart': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💕', '💞', '💓', '💗', '💖', '💘', '💝'],
+                    'star': ['⭐', '🌟', '✨', '💫', '🌠'],
+                    'fire': ['🔥', '🔥'],
+                    'smile': ['😀', '😃', '😄', '😁', '😊', '🙂', '😉'],
+                    'sad': ['😢', '😭', '😞', '😔', '🙁'],
+                    'check': ['✅', '☑️', '✔️'],
+                    'book': ['📚', '📖', '📕', '📗', '📘', '📙'],
+                    'folder': ['📁', '📂', '🗂️'],
+                    'work': ['💼', '🏢', '💻', '📊'],
+                    'home': ['🏠', '🏡', '🏘️'],
+                    'music': ['🎵', '🎶', '🎼', '🎹', '🎸', '🎤'],
+                    'food': ['🍎', '🍕', '🍔', '🍟', '🌮', '🍜'],
+                    'animal': ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'],
+                    'plant': ['🌸', '🌺', '🌻', '🌹', '🌷', '🍀', '🌲', '🌴'],
+                    'weather': ['☀️', '🌙', '⭐', '🌈', '☁️', '🌧️', '❄️', '⚡'],
+                    'sport': ['⚽', '🏀', '🏈', '⚾', '🎾'],
+                    'travel': ['✈️', '🚗', '🚀', '🚁', '⛵'],
+                    'money': ['💰', '💵', '💴', '💶', '💷', '💎'],
+                    'time': ['⏰', '⌚', '⏱️', '📅', '📆'],
+                    'idea': ['💡', '🧠', '💭', '🤔'],
+                    'party': ['🎉', '🎊', '🎈', '🎁', '🎀']
+                };
+                
+                // Check if query matches any search term
+                let matchedEmojis = [];
+                Object.keys(searchTerms).forEach(term => {
+                    if (term.includes(emojiSearchQuery) || emojiSearchQuery.includes(term)) {
+                        matchedEmojis = matchedEmojis.concat(searchTerms[term]);
+                    }
+                });
+                
+                if (matchedEmojis.length > 0) {
+                    emojis = [...new Set(matchedEmojis)];
+                }
+            }
+            
+            if (emojis.length === 0) {
+                grid.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No emojis found</div>';
+            } else {
+                grid.innerHTML = emojis.map(emoji => 
+                    `<span class="emoji-option" onclick="setPageIcon('${emoji}')">${emoji}</span>`
+                ).join('');
+            }
+        }
+
+        function setPageIcon(emoji) {
+            if (!currentEmojiPageId) return;
+            const page = pages.find(p => p.id === currentEmojiPageId);
+            if (page) {
+                page.icon = emoji;
+                savePagesToLocal();
+                renderPagesList();
+                closeEmojiPicker();
+                showToast('Icon updated!');
+            }
+        }
+
+        function removePageIcon() {
+            if (!currentEmojiPageId) return;
+            const page = pages.find(p => p.id === currentEmojiPageId);
+            if (page) {
+                delete page.icon;
+                savePagesToLocal();
+                renderPagesList();
+                closeEmojiPicker();
+                showToast('Icon removed!');
+            }
+        }
+
+        function closeEmojiPicker() {
+            document.getElementById('emojiPicker').classList.remove('active');
+            currentEmojiPageId = null;
+        }
+
+        // Close emoji picker when clicking outside
+        document.addEventListener('click', function(e) {
+            const picker = document.getElementById('emojiPicker');
+            if (picker && picker.classList.contains('active')) {
+                if (!picker.contains(e.target) && !e.target.classList.contains('page-icon')) {
+                    closeEmojiPicker();
+                }
+            }
+        });
 
         function formatBlock(tag) {
             document.execCommand('formatBlock', false, `<${tag}>`);
@@ -2648,9 +5425,622 @@
             }
         }
 
+        // Helper function to create media wrapper with action button and resize
+        function createMediaWrapper(content, type = 'media', resizable = true) {
+            const resizeHandles = resizable ? `
+                <div class="resize-handle se" onmousedown="startMediaWrapperResize(event, this.parentElement)"></div>
+                <div class="size-indicator"></div>
+            ` : '';
+            
+            return `
+                <div class="media-wrapper resizable-media" data-type="${type}" contenteditable="false" style="position: relative; margin: 16px 0;">
+                    <button class="media-action-btn" onclick="event.stopPropagation(); toggleMediaWrapperDropdown(this)" style="position: absolute; top: 8px; right: 8px; z-index: 20;">
+                        <i class="fas fa-ellipsis-v"></i>
+                        <div class="media-dropdown">
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); setMediaWrapperSize(this, 'small')">
+                                <i class="fas fa-compress-alt"></i> Small
+                            </div>
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); setMediaWrapperSize(this, 'medium')">
+                                <i class="fas fa-expand"></i> Medium
+                            </div>
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); setMediaWrapperSize(this, 'large')">
+                                <i class="fas fa-expand-arrows-alt"></i> Large
+                            </div>
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); setMediaWrapperSize(this, 'full')">
+                                <i class="fas fa-arrows-alt-h"></i> Full Width
+                            </div>
+                            <div class="media-dropdown-divider"></div>
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); setMediaWrapperAlign(this, 'left')">
+                                <i class="fas fa-align-left"></i> Align Left
+                            </div>
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); setMediaWrapperAlign(this, 'center')">
+                                <i class="fas fa-align-center"></i> Align Center
+                            </div>
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); setMediaWrapperAlign(this, 'right')">
+                                <i class="fas fa-align-right"></i> Align Right
+                            </div>
+                            <div class="media-dropdown-divider"></div>
+                            <div class="media-dropdown-item" onclick="event.stopPropagation(); duplicateMediaWrapper(this)">
+                                <i class="fas fa-copy"></i> Duplicate
+                            </div>
+                            <div class="media-dropdown-item danger" onclick="event.stopPropagation(); deleteMediaWrapper(this)">
+                                <i class="fas fa-trash"></i> Delete
+                            </div>
+                        </div>
+                    </button>
+                    ${resizeHandles}
+                    ${content}
+                </div>
+            `;
+        }
+        
+        function toggleMediaWrapperDropdown(btn) {
+            document.querySelectorAll('.media-dropdown.active').forEach(d => {
+                if (!btn.contains(d)) d.classList.remove('active');
+            });
+            const dropdown = btn.querySelector('.media-dropdown');
+            if (dropdown) dropdown.classList.toggle('active');
+        }
+        
+        function closeMediaWrapperDropdowns() {
+            document.querySelectorAll('.media-wrapper .media-dropdown.active').forEach(d => {
+                d.classList.remove('active');
+            });
+        }
+        
+        function setMediaWrapperSize(item, size) {
+            const wrapper = item.closest('.media-wrapper');
+            if (!wrapper) return;
+            
+            const sizes = { small: '25%', medium: '50%', large: '75%', full: '100%' };
+            wrapper.style.width = sizes[size] || '50%';
+            
+            closeMediaWrapperDropdowns();
+            savePage();
+            showToast(`Size set to ${size}`);
+        }
+        
+        function setMediaWrapperAlign(item, align) {
+            const wrapper = item.closest('.media-wrapper');
+            if (!wrapper) return;
+            
+            wrapper.style.marginLeft = align === 'center' ? 'auto' : (align === 'right' ? 'auto' : '0');
+            wrapper.style.marginRight = align === 'center' ? 'auto' : (align === 'left' ? 'auto' : '0');
+            
+            closeMediaWrapperDropdowns();
+            savePage();
+            showToast(`Aligned ${align}`);
+        }
+        
+        function duplicateMediaWrapper(item) {
+            const wrapper = item.closest('.media-wrapper');
+            if (!wrapper) return;
+            const clone = wrapper.cloneNode(true);
+            wrapper.parentNode.insertBefore(clone, wrapper.nextSibling);
+            closeMediaWrapperDropdowns();
+            savePage();
+            showToast('Duplicated!');
+        }
+        
+        function deleteMediaWrapper(item) {
+            const wrapper = item.closest('.media-wrapper');
+            if (!wrapper) return;
+            wrapper.remove();
+            savePage();
+            showToast('Deleted!');
+        }
+        
+        // Resize functionality for media wrapper
+        let mediaWrapperResizeState = { isResizing: false, element: null, startX: 0, startWidth: 0 };
+        
+        function startMediaWrapperResize(e, element) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            mediaWrapperResizeState.isResizing = true;
+            mediaWrapperResizeState.element = element;
+            mediaWrapperResizeState.startX = e.clientX;
+            mediaWrapperResizeState.startWidth = element.offsetWidth;
+            
+            element.classList.add('resizing');
+            
+            const indicator = element.querySelector('.size-indicator');
+            if (indicator) indicator.style.opacity = '1';
+        }
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!mediaWrapperResizeState.isResizing) return;
+            
+            const element = mediaWrapperResizeState.element;
+            const deltaX = e.clientX - mediaWrapperResizeState.startX;
+            const newWidth = Math.max(100, mediaWrapperResizeState.startWidth + deltaX);
+            
+            element.style.width = newWidth + 'px';
+            
+            const indicator = element.querySelector('.size-indicator');
+            if (indicator) indicator.textContent = `${Math.round(newWidth)}px`;
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (!mediaWrapperResizeState.isResizing) return;
+            
+            const element = mediaWrapperResizeState.element;
+            if (element) {
+                element.classList.remove('resizing');
+                const indicator = element.querySelector('.size-indicator');
+                if (indicator) indicator.style.opacity = '0';
+            }
+            
+            mediaWrapperResizeState.isResizing = false;
+            mediaWrapperResizeState.element = null;
+            savePage();
+        });
+
+        // Insert Table Function
+        function insertTable() {
+            const rows = prompt('Number of rows:', '3');
+            const cols = prompt('Number of columns:', '3');
+            
+            if (!rows || !cols) return;
+            
+            const numRows = parseInt(rows);
+            const numCols = parseInt(cols);
+            
+            if (isNaN(numRows) || isNaN(numCols) || numRows < 1 || numCols < 1) {
+                showToast('Invalid table dimensions');
+                return;
+            }
+            
+            let tableHtml = '<div class="table-container" style="overflow-x: auto;"><table>';
+            // Header row
+            tableHtml += '<tr>';
+            for (let c = 0; c < numCols; c++) {
+                tableHtml += '<th>Header ' + (c + 1) + '</th>';
+            }
+            tableHtml += '</tr>';
+            // Data rows
+            for (let r = 0; r < numRows - 1; r++) {
+                tableHtml += '<tr>';
+                for (let c = 0; c < numCols; c++) {
+                    tableHtml += '<td>Cell</td>';
+                }
+                tableHtml += '</tr>';
+            }
+            tableHtml += '</table></div>';
+            
+            insertHtmlAtCursor(createMediaWrapper(tableHtml, 'table') + '<p></p>');
+            showToast('Table inserted!');
+        }
+
+        // Insert Image Function
+        function insertImage() {
+            const choice = prompt('Enter image URL or type "upload" to upload a file:', '');
+            
+            if (!choice) return;
+            
+            if (choice.toLowerCase() === 'upload') {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const imgHtml = `<img src="${event.target.result}" alt="Uploaded image" style="max-width: 100%; border-radius: 8px;">`;
+                            insertHtmlAtCursor(createMediaWrapper(imgHtml, 'image'));
+                            showToast('Image inserted!');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                fileInput.click();
+            } else {
+                const imgHtml = `<img src="${choice}" alt="Image" style="max-width: 100%; border-radius: 8px;">`;
+                insertHtmlAtCursor(createMediaWrapper(imgHtml, 'image'));
+                showToast('Image inserted!');
+            }
+        }
+
+        // Insert Video Function
+        function insertVideo() {
+            const choice = prompt('Enter video URL (YouTube, Vimeo, or direct video link) or type "upload" to upload:', '');
+            
+            if (!choice) return;
+            
+            if (choice.toLowerCase() === 'upload') {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'video/*';
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const videoHtml = `
+                                <div style="border-radius: 8px; overflow: hidden;">
+                                    <video controls style="width: 100%; max-width: 720px; display: block;">
+                                        <source src="${event.target.result}" type="${file.type}">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            `;
+                            insertHtmlAtCursor(createMediaWrapper(videoHtml, 'video'));
+                            showToast('Video inserted!');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                fileInput.click();
+            } else {
+                // Check if it's a YouTube or Vimeo URL
+                const embedHtml = getVideoEmbedHtml(choice);
+                insertHtmlAtCursor(createMediaWrapper(embedHtml, 'video'));
+                showToast('Video inserted!');
+            }
+        }
+        
+        function getVideoEmbedHtml(url) {
+            let embedUrl = '';
+            
+            // YouTube
+            const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (youtubeMatch) {
+                embedUrl = `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+                return `
+                    <div style="border-radius: 8px; overflow: hidden; position: relative; padding-bottom: 56.25%; height: 0;">
+                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                    </div>
+                `;
+            }
+            
+            // Vimeo
+            const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+            if (vimeoMatch) {
+                embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+                return `
+                    <div style="border-radius: 8px; overflow: hidden; position: relative; padding-bottom: 56.25%; height: 0;">
+                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                    </div>
+                `;
+            }
+            
+            // Direct video URL
+            return `
+                <div style="border-radius: 8px; overflow: hidden;">
+                    <video controls style="width: 100%; max-width: 720px; display: block;">
+                        <source src="${url}">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            `;
+        }
+
+        // Insert Audio Function
+        function insertAudio() {
+            const choice = prompt('Enter audio URL (Spotify, SoundCloud, or direct link) or type "upload" to upload:', '');
+            
+            if (!choice) return;
+            
+            if (choice.toLowerCase() === 'upload') {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'audio/*';
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            const audioHtml = `
+                                <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                                    <audio controls style="width: 100%;">
+                                        <source src="${event.target.result}" type="${file.type}">
+                                        Your browser does not support the audio tag.
+                                    </audio>
+                                </div>
+                            `;
+                            insertHtmlAtCursor(createMediaWrapper(audioHtml, 'audio'));
+                            showToast('Audio inserted!');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                fileInput.click();
+            } else {
+                // Check if it's Spotify or SoundCloud
+                const embedHtml = getAudioEmbedHtml(choice);
+                insertHtmlAtCursor(createMediaWrapper(embedHtml, 'audio'));
+                showToast('Audio inserted!');
+            }
+        }
+        
+        function getAudioEmbedHtml(url) {
+            // Spotify track/album/playlist
+            const spotifyMatch = url.match(/open\.spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/);
+            if (spotifyMatch) {
+                const type = spotifyMatch[1];
+                const id = spotifyMatch[2];
+                return `
+                    <div style="border-radius: 12px; overflow: hidden;">
+                        <iframe src="https://open.spotify.com/embed/${type}/${id}" width="100%" height="${type === 'track' ? '152' : '352'}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+                    </div>
+                `;
+            }
+            
+            // SoundCloud
+            if (url.includes('soundcloud.com')) {
+                return `
+                    <div style="border-radius: 8px; overflow: hidden;">
+                        <iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>
+                    </div>
+                `;
+            }
+            
+            // Direct audio URL
+            return `
+                <div style="padding: 12px; background: var(--bg-secondary); border-radius: 8px;">
+                    <audio controls style="width: 100%;">
+                        <source src="${url}">
+                        Your browser does not support the audio tag.
+                    </audio>
+                </div>
+            `;
+        }
+
+        // Insert Web Embed Function
+        function insertEmbed() {
+            const url = prompt('Enter URL to embed (web page, Google Docs, Figma, CodePen, etc.):', '');
+            
+            if (!url) return;
+            
+            // Try to get special embed for known services
+            const embedHtml = getWebEmbedHtml(url);
+            insertHtmlAtCursor(createMediaWrapper(embedHtml, 'embed'));
+            showToast('Content embedded!');
+        }
+        
+        function getWebEmbedHtml(url) {
+            // Google Docs/Sheets/Slides
+            if (url.includes('docs.google.com')) {
+                const embedUrl = url.replace('/edit', '/preview').replace('/view', '/preview');
+                return `
+                    <div style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                        <iframe src="${embedUrl}" style="width: 100%; height: 500px; border: none;"></iframe>
+                    </div>
+                `;
+            }
+            
+            // Figma
+            if (url.includes('figma.com')) {
+                const embedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`;
+                return `
+                    <div style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                        <iframe src="${embedUrl}" style="width: 100%; height: 450px; border: none;" allowfullscreen></iframe>
+                    </div>
+                `;
+            }
+            
+            // CodePen
+            const codepenMatch = url.match(/codepen\.io\/([^\/]+)\/pen\/([^\/\?]+)/);
+            if (codepenMatch) {
+                return `
+                    <div style="border-radius: 8px; overflow: hidden;">
+                        <iframe height="400" style="width: 100%;" scrolling="no" src="https://codepen.io/${codepenMatch[1]}/embed/${codepenMatch[2]}?default-tab=result" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true"></iframe>
+                    </div>
+                `;
+            }
+            
+            // Twitter/X post
+            if (url.includes('twitter.com') || url.includes('x.com')) {
+                return `
+                    <div style="padding: 16px; background: var(--bg-secondary); border-radius: 8px; text-align: center;">
+                        <blockquote class="twitter-tweet"><a href="${url}">Loading tweet...</a></blockquote>
+                        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"><\/script>
+                    </div>
+                `;
+            }
+            
+            // GitHub Gist
+            if (url.includes('gist.github.com')) {
+                return `
+                    <div style="border-radius: 8px; overflow: hidden;">
+                        <script src="${url}.js"><\/script>
+                    </div>
+                `;
+            }
+            
+            // Generic iframe embed
+            return `
+                <div style="border-radius: 8px; overflow: hidden; border: 1px solid var(--border);">
+                    <iframe src="${url}" style="width: 100%; height: 400px; border: none;" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+                </div>
+            `;
+        }
+
+        // Insert Checklist Function
+        function insertChecklist() {
+            const items = prompt('Enter checklist items (comma-separated):', 'Item 1, Item 2, Item 3');
+            
+            if (!items) return;
+            
+            const itemList = items.split(',').map(i => i.trim()).filter(i => i);
+            
+            let checklistContent = '<div class="checklist-container" style="width: 100%;">';
+            itemList.forEach(item => {
+                checklistContent += `
+                    <div class="checklist-item">
+                        <input type="checkbox" onchange="toggleChecklistItem(this)">
+                        <span class="checklist-text" contenteditable="true">${item}</span>
+                    </div>
+                `;
+            });
+            checklistContent += '</div>';
+            
+            insertHtmlAtCursor(createMediaWrapper(checklistContent, 'checklist', false) + '<p></p>');
+            showToast('Checklist inserted!');
+        }
+
+        function toggleChecklistItem(checkbox) {
+            const item = checkbox.closest('.checklist-item');
+            if (checkbox.checked) {
+                item.classList.add('checked');
+            } else {
+                item.classList.remove('checked');
+            }
+        }
+
+        // Insert Collapsible Section Function
+        function insertCollapsible() {
+            const title = prompt('Section title:', 'Click to expand');
+            
+            if (!title) return;
+            
+            const collapsibleHtml = `
+                <div class="collapsible-section">
+                    <div class="collapsible-header" onclick="toggleCollapsibleSection(this)">
+                        <i class="fas fa-chevron-down collapsible-icon"></i>
+                        <span class="collapsible-title" contenteditable="true">${title}</span>
+                    </div>
+                    <button class="collapsible-action-btn" onclick="event.stopPropagation(); toggleCollapsibleDropdown(this)">
+                        <i class="fas fa-ellipsis-v"></i>
+                        <div class="collapsible-dropdown">
+                            <div class="collapsible-dropdown-item" onclick="event.stopPropagation(); duplicateCollapsible(this)">
+                                <i class="fas fa-copy"></i> Duplicate
+                            </div>
+                            <div class="collapsible-dropdown-item danger" onclick="event.stopPropagation(); deleteCollapsible(this)">
+                                <i class="fas fa-trash"></i> Delete
+                            </div>
+                        </div>
+                    </button>
+                    <div class="collapsible-content" contenteditable="true">
+                        <p>Click here to add content...</p>
+                    </div>
+                </div>
+                <p></p>
+            `;
+            
+            insertHtmlAtCursor(collapsibleHtml);
+            showToast('Collapsible section inserted!');
+        }
+
+        function toggleCollapsibleSection(header) {
+            const section = header.closest('.collapsible-section');
+            section.classList.toggle('collapsed');
+        }
+        
+        function toggleCollapsibleDropdown(btn) {
+            // Close all other dropdowns
+            document.querySelectorAll('.collapsible-dropdown.active').forEach(d => {
+                if (d !== btn.querySelector('.collapsible-dropdown')) {
+                    d.classList.remove('active');
+                }
+            });
+            
+            const dropdown = btn.querySelector('.collapsible-dropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('active');
+            }
+        }
+        
+        function duplicateCollapsible(item) {
+            const section = item.closest('.collapsible-section');
+            if (!section) return;
+            
+            const clone = section.cloneNode(true);
+            section.parentNode.insertBefore(clone, section.nextSibling);
+            
+            closeCollapsibleDropdowns();
+            savePage();
+            showToast('Section duplicated');
+        }
+        
+        function deleteCollapsible(item) {
+            const section = item.closest('.collapsible-section');
+            if (!section) return;
+            
+            section.remove();
+            savePage();
+            showToast('Section deleted');
+        }
+        
+        function closeCollapsibleDropdowns() {
+            document.querySelectorAll('.collapsible-dropdown.active').forEach(d => {
+                d.classList.remove('active');
+            });
+        }
+        
+        // Close collapsible dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.collapsible-action-btn')) {
+                closeCollapsibleDropdowns();
+            }
+        });
+
+        // Helper function to insert HTML at cursor
+        function insertHtmlAtCursor(html) {
+            const editor = document.getElementById('editor');
+            editor.focus();
+            
+            const selection = window.getSelection();
+            if (selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                const fragment = document.createDocumentFragment();
+                let lastNode;
+                while (tempDiv.firstChild) {
+                    lastNode = fragment.appendChild(tempDiv.firstChild);
+                }
+                
+                range.insertNode(fragment);
+                
+                // Move cursor to end
+                if (lastNode) {
+                    const newRange = document.createRange();
+                    newRange.setStartAfter(lastNode);
+                    newRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                }
+            } else {
+                editor.innerHTML += html;
+            }
+        }
+
+        // Insert Page Link Function
+        function insertPageLink() {
+            const pageList = pages.filter(p => p.id !== 'help_page').map(p => `${p.title}`).join(', ');
+            const pageName = prompt(`Enter page name to link to:\n\nAvailable: ${pageList}`, '');
+            
+            if (!pageName) return;
+            
+            const targetPage = pages.find(p => p.title.toLowerCase() === pageName.toLowerCase());
+            
+            if (targetPage) {
+                // Add a space after the link so cursor can escape the span
+                const linkHtml = `<span class="page-link" data-page-id="${targetPage.id}" onclick="loadPage('${targetPage.id}')" contenteditable="false">📄 ${targetPage.title}</span>&nbsp;`;
+                insertHtmlAtCursor(linkHtml);
+                showToast('Page link inserted!');
+            } else {
+                showToast('Page not found');
+            }
+        }
+
         // UI Functions
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggle');
+
+            sidebar.classList.toggle('collapsed');
+            if (toggleBtn) {
+                toggleBtn.classList.toggle('collapsed');
+            }
+
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('noteflow_sidebar_collapsed', isCollapsed ? 'true' : 'false');
         }
 
         function closeModal(modalId) {
@@ -2674,13 +6064,33 @@
 
         // New Features Functions
         function filterPages() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const pageItems = document.querySelectorAll('.page-item');
             
-            pageItems.forEach(item => {
-                const title = item.querySelector('span').textContent.toLowerCase();
-                if (title.includes(query)) {
+            if (query === '') {
+                // Show all pages when search is empty
+                pageItems.forEach(item => {
                     item.style.display = 'flex';
+                });
+                return;
+            }
+            
+            pageItems.forEach(item => {
+                const pageId = item.dataset.pageId;
+                const page = pages.find(p => p.id === pageId);
+                if (!page) {
+                    item.style.display = 'none';
+                    return;
+                }
+                
+                const title = page.title.toLowerCase();
+                // Strip HTML tags for content search
+                const contentText = page.content ? page.content.replace(/<[^>]*>/g, '').toLowerCase() : '';
+                
+                if (title.includes(query) || contentText.includes(query)) {
+                    item.style.display = 'flex';
+                    // Highlight matching pages
+                    item.style.background = title.includes(query) ? 'var(--bg-hover)' : '';
                 } else {
                     item.style.display = 'none';
                 }
@@ -2821,7 +6231,692 @@
             if (themePanel.classList.contains('active') && !themePanel.contains(e.target) && !themeSwitcher.contains(e.target)) {
                 themePanel.classList.remove('active');
             }
+            
+            // Close slash menu on outside click
+            const slashMenu = document.getElementById('slashMenu');
+            if (slashMenu && slashMenu.classList.contains('active') && !slashMenu.contains(e.target)) {
+                hideSlashMenu();
+            }
         });
+
+        // ==================== SLASH COMMANDS ====================
+        const slashCommands = [
+            { id: 'h1', icon: 'fa-heading', title: 'Heading 1', desc: 'Large section heading', action: () => formatBlock('h1') },
+            { id: 'h2', icon: 'fa-heading', title: 'Heading 2', desc: 'Medium section heading', action: () => formatBlock('h2') },
+            { id: 'h3', icon: 'fa-heading', title: 'Heading 3', desc: 'Small section heading', action: () => formatBlock('h3') },
+            { id: 'bullet', icon: 'fa-list-ul', title: 'Bullet List', desc: 'Create a bulleted list', action: () => formatText('insertUnorderedList') },
+            { id: 'numbered', icon: 'fa-list-ol', title: 'Numbered List', desc: 'Create a numbered list', action: () => formatText('insertOrderedList') },
+            { id: 'todo', icon: 'fa-tasks', title: 'To-do List', desc: 'Track tasks with checkboxes', action: () => insertChecklist() },
+            { id: 'toggle', icon: 'fa-chevron-down', title: 'Toggle', desc: 'Collapsible content section', action: () => insertCollapsible() },
+            { id: 'quote', icon: 'fa-quote-left', title: 'Quote', desc: 'Capture a quote', action: () => formatBlock('blockquote') },
+            { id: 'divider', icon: 'fa-minus', title: 'Divider', desc: 'Horizontal line separator', action: () => insertDivider() },
+            { id: 'code', icon: 'fa-code', title: 'Code Block', desc: 'Capture code snippet', action: () => formatBlock('pre') },
+            { id: 'table', icon: 'fa-table', title: 'Table', desc: 'Add a table', action: () => insertTable() },
+            { id: 'image', icon: 'fa-image', title: 'Image', desc: 'Upload or embed image', action: () => insertImage() },
+            { id: 'video', icon: 'fa-video', title: 'Video', desc: 'Embed YouTube, Vimeo, or upload', action: () => insertVideo() },
+            { id: 'audio', icon: 'fa-music', title: 'Audio', desc: 'Embed Spotify, SoundCloud, or upload', action: () => insertAudio() },
+            { id: 'embed', icon: 'fa-globe', title: 'Embed', desc: 'Embed external content', action: () => insertEmbed() },
+            { id: 'link', icon: 'fa-link', title: 'Link', desc: 'Add a web link', action: () => insertLink() },
+            { id: 'pagelink', icon: 'fa-file-alt', title: 'Link to Page', desc: 'Link to another page', action: () => insertPageLink() },
+            { id: 'callout', icon: 'fa-exclamation-circle', title: 'Callout', desc: 'Highlight important info', action: () => insertCallout() },
+        ];
+        
+        let slashMenuVisible = false;
+        let slashMenuSelectedIndex = 0;
+        let slashTriggerRange = null;
+        let slashFilterText = '';
+        
+        function initSlashCommands() {
+            const editor = document.getElementById('editor');
+            
+            editor.addEventListener('keydown', handleSlashKeydown);
+            editor.addEventListener('input', handleSlashInput);
+        }
+        
+        function handleSlashInput(e) {
+            if (!slashMenuVisible) {
+                // Check if user just typed /
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+                
+                const range = selection.getRangeAt(0);
+                const textNode = range.startContainer;
+                
+                if (textNode.nodeType === 3) { // Text node
+                    const text = textNode.textContent;
+                    const cursorPos = range.startOffset;
+                    
+                    // Look for / at the start of line or after space
+                    if (cursorPos > 0) {
+                        const charBefore = text[cursorPos - 1];
+                        const charBeforeThat = cursorPos > 1 ? text[cursorPos - 2] : ' ';
+                        
+                        if (charBefore === '/' && (charBeforeThat === ' ' || charBeforeThat === '\n' || cursorPos === 1)) {
+                            showSlashMenu();
+                            slashTriggerRange = range.cloneRange();
+                            slashTriggerRange.setStart(textNode, cursorPos - 1);
+                        }
+                    }
+                }
+            } else {
+                // Update filter
+                updateSlashFilter();
+            }
+        }
+        
+        function handleSlashKeydown(e) {
+            if (!slashMenuVisible) return;
+            
+            const filteredCommands = getFilteredCommands();
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                slashMenuSelectedIndex = (slashMenuSelectedIndex + 1) % filteredCommands.length;
+                renderSlashMenuItems(filteredCommands);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                slashMenuSelectedIndex = (slashMenuSelectedIndex - 1 + filteredCommands.length) % filteredCommands.length;
+                renderSlashMenuItems(filteredCommands);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (filteredCommands[slashMenuSelectedIndex]) {
+                    executeSlashCommand(filteredCommands[slashMenuSelectedIndex]);
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                hideSlashMenu();
+            }
+        }
+        
+        function updateSlashFilter() {
+            const selection = window.getSelection();
+            if (!selection.rangeCount || !slashTriggerRange) return;
+            
+            const range = selection.getRangeAt(0);
+            
+            // Get text between slash and cursor
+            try {
+                const filterRange = document.createRange();
+                filterRange.setStart(slashTriggerRange.startContainer, slashTriggerRange.startOffset + 1);
+                filterRange.setEnd(range.startContainer, range.startOffset);
+                slashFilterText = filterRange.toString().toLowerCase();
+            } catch (e) {
+                slashFilterText = '';
+            }
+            
+            const filtered = getFilteredCommands();
+            if (filtered.length === 0) {
+                hideSlashMenu();
+            } else {
+                slashMenuSelectedIndex = 0;
+                renderSlashMenuItems(filtered);
+            }
+        }
+        
+        function getFilteredCommands() {
+            if (!slashFilterText) return slashCommands;
+            return slashCommands.filter(cmd => 
+                cmd.title.toLowerCase().includes(slashFilterText) ||
+                cmd.id.toLowerCase().includes(slashFilterText)
+            );
+        }
+        
+        function showSlashMenu() {
+            const menu = document.getElementById('slashMenu');
+            const selection = window.getSelection();
+            
+            if (!selection.rangeCount) return;
+            
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            
+            // Position menu below cursor
+            menu.style.left = rect.left + 'px';
+            menu.style.top = (rect.bottom + 8) + 'px';
+            
+            slashMenuVisible = true;
+            slashMenuSelectedIndex = 0;
+            slashFilterText = '';
+            menu.classList.add('active');
+            
+            renderSlashMenuItems(slashCommands);
+        }
+        
+        function hideSlashMenu() {
+            const menu = document.getElementById('slashMenu');
+            menu.classList.remove('active');
+            slashMenuVisible = false;
+            slashTriggerRange = null;
+            slashFilterText = '';
+        }
+        
+        function renderSlashMenuItems(commands) {
+            const container = document.getElementById('slashMenuItems');
+            
+            if (commands.length === 0) {
+                container.innerHTML = '<div class="slash-menu-empty">No matching commands</div>';
+                return;
+            }
+            
+            container.innerHTML = commands.map((cmd, index) => `
+                <div class="slash-menu-item ${index === slashMenuSelectedIndex ? 'selected' : ''}" 
+                     onclick="executeSlashCommand(slashCommands.find(c => c.id === '${cmd.id}'))"
+                     onmouseenter="slashMenuSelectedIndex = ${index}; renderSlashMenuItems(getFilteredCommands());">
+                    <div class="slash-menu-item-icon">
+                        <i class="fas ${cmd.icon}"></i>
+                    </div>
+                    <div class="slash-menu-item-content">
+                        <div class="slash-menu-item-title">${cmd.title}</div>
+                        <div class="slash-menu-item-desc">${cmd.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function executeSlashCommand(command) {
+            // Remove the slash and any filter text
+            if (slashTriggerRange) {
+                const selection = window.getSelection();
+                const range = selection.getRangeAt(0);
+                
+                const deleteRange = document.createRange();
+                deleteRange.setStart(slashTriggerRange.startContainer, slashTriggerRange.startOffset);
+                deleteRange.setEnd(range.startContainer, range.startOffset);
+                deleteRange.deleteContents();
+            }
+            
+            hideSlashMenu();
+            
+            // Execute the command
+            if (command && command.action) {
+                command.action();
+            }
+        }
+        
+        function insertDivider() {
+            insertHtmlAtCursor('<hr style="border: none; border-top: 1px solid var(--border); margin: 16px 0;">');
+        }
+        
+        function insertCallout() {
+            const calloutContent = `
+                <div class="callout" contenteditable="true" style="padding: 16px; background: var(--bg-hover); border-left: 4px solid var(--accent); border-radius: 4px; width: 100%;">
+                    <strong>💡 Note:</strong> Type your callout text here...
+                </div>
+            `;
+            insertHtmlAtCursor(createMediaWrapper(calloutContent, 'callout', false) + '<p></p>');
+        }
+
+        // ==================== RESIZABLE MEDIA ====================
+        let resizeState = {
+            isResizing: false,
+            element: null,
+            startX: 0,
+            startY: 0,
+            startWidth: 0,
+            startHeight: 0,
+            aspectRatio: 1
+        };
+        
+        function initResizableMedia() {
+            const editor = document.getElementById('editor');
+            
+            // Use MutationObserver to watch for new images/media
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            makeMediaResizable(node);
+                        }
+                    });
+                });
+            });
+            
+            observer.observe(editor, { childList: true, subtree: true });
+            
+            // Initial setup for existing content
+            setTimeout(() => {
+                editor.querySelectorAll('img, .media-container').forEach(makeMediaResizable);
+            }, 100);
+            
+            // Global mouse event handlers
+            document.addEventListener('mousemove', handleResizeMove);
+            document.addEventListener('mouseup', handleResizeEnd);
+        }
+        
+        function makeMediaResizable(element) {
+            // Skip media-wrapper elements as they already have resize functionality
+            if (element.classList && element.classList.contains('media-wrapper')) return;
+            
+            // Check if it's an image or media container
+            if (element.tagName === 'IMG') {
+                wrapImageForResize(element);
+            } else if (element.classList && element.classList.contains('media-container')) {
+                addResizeHandles(element);
+            }
+            
+            // Check children too
+            if (element.querySelectorAll) {
+                element.querySelectorAll('img').forEach(img => {
+                    if (!img.closest('.resizable-media') && !img.closest('.media-wrapper')) {
+                        wrapImageForResize(img);
+                    }
+                });
+            }
+        }
+        
+        function wrapImageForResize(img) {
+            if (img.closest('.resizable-media')) return;
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'resizable-media';
+            wrapper.contentEditable = 'false';
+            wrapper.style.width = img.style.width || img.width + 'px' || 'auto';
+            
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+            
+            addResizeHandles(wrapper);
+        }
+        
+        function addResizeHandles(element) {
+            if (element.querySelector('.resize-handle')) return;
+            
+            element.classList.add('resizable-media');
+            element.contentEditable = 'false';
+            
+            // Add resize handle (bottom-right)
+            const handleSE = document.createElement('div');
+            handleSE.className = 'resize-handle se';
+            handleSE.addEventListener('mousedown', (e) => startResize(e, element));
+            element.appendChild(handleSE);
+            
+            // Add size indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'size-indicator';
+            element.appendChild(indicator);
+            
+            // Add action button with dropdown
+            addMediaActionButton(element);
+        }
+        
+        function addMediaActionButton(element) {
+            if (element.querySelector('.media-action-btn')) return;
+            
+            const btn = document.createElement('button');
+            btn.className = 'media-action-btn';
+            btn.innerHTML = '<i class="fas fa-ellipsis-v"></i>';
+            btn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleMediaDropdown(element);
+            };
+            
+            const dropdown = document.createElement('div');
+            dropdown.className = 'media-dropdown';
+            dropdown.innerHTML = `
+                <div class="media-dropdown-item" onclick="setMediaSize(this.closest('.resizable-media'), 'small')">
+                    <i class="fas fa-compress-alt"></i> Small
+                </div>
+                <div class="media-dropdown-item" onclick="setMediaSize(this.closest('.resizable-media'), 'medium')">
+                    <i class="fas fa-expand"></i> Medium
+                </div>
+                <div class="media-dropdown-item" onclick="setMediaSize(this.closest('.resizable-media'), 'large')">
+                    <i class="fas fa-expand-arrows-alt"></i> Large
+                </div>
+                <div class="media-dropdown-item" onclick="setMediaSize(this.closest('.resizable-media'), 'full')">
+                    <i class="fas fa-arrows-alt-h"></i> Full Width
+                </div>
+                <div class="media-dropdown-divider"></div>
+                <div class="media-dropdown-item" onclick="setMediaAlign(this.closest('.resizable-media'), 'left')">
+                    <i class="fas fa-align-left"></i> Align Left
+                </div>
+                <div class="media-dropdown-item" onclick="setMediaAlign(this.closest('.resizable-media'), 'center')">
+                    <i class="fas fa-align-center"></i> Align Center
+                </div>
+                <div class="media-dropdown-item" onclick="setMediaAlign(this.closest('.resizable-media'), 'right')">
+                    <i class="fas fa-align-right"></i> Align Right
+                </div>
+                <div class="media-dropdown-divider"></div>
+                <div class="media-dropdown-item" onclick="duplicateMedia(this.closest('.resizable-media'))">
+                    <i class="fas fa-copy"></i> Duplicate
+                </div>
+                <div class="media-dropdown-item danger" onclick="deleteMedia(this.closest('.resizable-media'))">
+                    <i class="fas fa-trash"></i> Delete
+                </div>
+            `;
+            
+            btn.appendChild(dropdown);
+            element.appendChild(btn);
+        }
+        
+        function toggleMediaDropdown(element) {
+            // Close all other dropdowns
+            document.querySelectorAll('.media-dropdown.active').forEach(d => {
+                if (d.closest('.resizable-media') !== element) {
+                    d.classList.remove('active');
+                }
+            });
+            
+            const dropdown = element.querySelector('.media-dropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('active');
+            }
+        }
+        
+        function setMediaSize(element, size) {
+            if (!element) return;
+            
+            const sizes = {
+                small: '300px',
+                medium: '500px',
+                large: '720px',
+                full: '100%'
+            };
+            
+            element.style.width = sizes[size] || 'auto';
+            closeMediaDropdowns();
+            savePage();
+        }
+        
+        function setMediaAlign(element, align) {
+            if (!element) return;
+            
+            // Reset alignment styles
+            element.style.marginLeft = '';
+            element.style.marginRight = '';
+            element.style.display = 'inline-block';
+            
+            if (align === 'center') {
+                element.style.display = 'block';
+                element.style.marginLeft = 'auto';
+                element.style.marginRight = 'auto';
+            } else if (align === 'right') {
+                element.style.display = 'block';
+                element.style.marginLeft = 'auto';
+                element.style.marginRight = '0';
+            } else {
+                element.style.marginLeft = '0';
+                element.style.marginRight = 'auto';
+            }
+            
+            closeMediaDropdowns();
+            savePage();
+        }
+        
+        function duplicateMedia(element) {
+            if (!element) return;
+            
+            const clone = element.cloneNode(true);
+            element.parentNode.insertBefore(clone, element.nextSibling);
+            
+            // Re-initialize resize handles on clone
+            addResizeHandles(clone);
+            
+            closeMediaDropdowns();
+            savePage();
+            showToast('Media duplicated');
+        }
+        
+        function deleteMedia(element) {
+            if (!element) return;
+            
+            element.remove();
+            savePage();
+            showToast('Media deleted');
+        }
+        
+        function closeMediaDropdowns() {
+            document.querySelectorAll('.media-dropdown.active').forEach(d => {
+                d.classList.remove('active');
+            });
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.media-action-btn')) {
+                closeMediaDropdowns();
+                closeMediaWrapperDropdowns();
+            }
+        });
+        
+        function startResize(e, element) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const rect = element.getBoundingClientRect();
+            
+            resizeState.isResizing = true;
+            resizeState.element = element;
+            resizeState.startX = e.clientX;
+            resizeState.startY = e.clientY;
+            resizeState.startWidth = rect.width;
+            resizeState.startHeight = rect.height;
+            resizeState.aspectRatio = rect.width / rect.height;
+            
+            element.classList.add('resizing');
+            
+            // Prevent text selection during resize
+            document.body.style.userSelect = 'none';
+        }
+        
+        function handleResizeMove(e) {
+            if (!resizeState.isResizing || !resizeState.element) return;
+            
+            const deltaX = e.clientX - resizeState.startX;
+            
+            // Calculate new width maintaining aspect ratio
+            let newWidth = resizeState.startWidth + deltaX;
+            newWidth = Math.max(100, Math.min(newWidth, 1200)); // Min 100px, max 1200px
+            
+            const newHeight = newWidth / resizeState.aspectRatio;
+            
+            // Apply to element
+            resizeState.element.style.width = newWidth + 'px';
+            
+            // Apply to inner image/video/iframe if exists
+            const inner = resizeState.element.querySelector('img, video, iframe');
+            if (inner) {
+                inner.style.width = '100%';
+                inner.style.height = 'auto';
+            }
+            
+            // Update size indicator
+            const indicator = resizeState.element.querySelector('.size-indicator');
+            if (indicator) {
+                indicator.textContent = `${Math.round(newWidth)} × ${Math.round(newHeight)}`;
+            }
+        }
+        
+        function handleResizeEnd(e) {
+            if (!resizeState.isResizing) return;
+            
+            if (resizeState.element) {
+                resizeState.element.classList.remove('resizing');
+            }
+            
+            resizeState.isResizing = false;
+            resizeState.element = null;
+            
+            document.body.style.userSelect = '';
+            
+            // Trigger save
+            savePage();
+        }
+
+        // ==================== TAGS SYSTEM ====================
+        const tagColors = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'];
+        let activeTagFilter = null;
+        
+        function getAllTags() {
+            const allTags = new Set();
+            pages.forEach(page => {
+                if (page.tags && Array.isArray(page.tags)) {
+                    page.tags.forEach(tag => allTags.add(tag.name));
+                }
+            });
+            return Array.from(allTags);
+        }
+        
+        function renderTagsContainer() {
+            const container = document.getElementById('tagsContainer');
+            if (!container || !currentPageId) return;
+            
+            const page = pages.find(p => p.id === currentPageId);
+            if (!page) return;
+            
+            const tags = page.tags || [];
+            
+            let html = '';
+            tags.forEach((tag, index) => {
+                html += `
+                    <span class="tag" data-color="${tag.color || 'gray'}" onclick="event.stopPropagation();">
+                        ${tag.name}
+                        <span class="tag-remove" onclick="removeTag(${index})">&times;</span>
+                    </span>
+                `;
+            });
+            
+            html += `
+                <button class="add-tag-btn" onclick="showAddTagInput()">
+                    <i class="fas fa-plus"></i> Add tag
+                </button>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function showAddTagInput() {
+            const container = document.getElementById('tagsContainer');
+            const addBtn = container.querySelector('.add-tag-btn');
+            
+            // Create input wrapper
+            const wrapper = document.createElement('div');
+            wrapper.className = 'tag-input-wrapper';
+            wrapper.innerHTML = `
+                <input type="text" class="tag-input" id="tagInput" placeholder="Tag name..." 
+                    onkeydown="handleTagInputKeydown(event)" onblur="handleTagInputBlur(event)">
+            `;
+            
+            addBtn.style.display = 'none';
+            container.insertBefore(wrapper, addBtn);
+            
+            const input = document.getElementById('tagInput');
+            input.focus();
+        }
+        
+        function handleTagInputKeydown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addTag(event.target.value);
+            } else if (event.key === 'Escape') {
+                cancelTagInput();
+            }
+        }
+        
+        function handleTagInputBlur(event) {
+            const value = event.target.value.trim();
+            if (value) {
+                addTag(value);
+            } else {
+                cancelTagInput();
+            }
+        }
+        
+        function cancelTagInput() {
+            const container = document.getElementById('tagsContainer');
+            const wrapper = container.querySelector('.tag-input-wrapper');
+            const addBtn = container.querySelector('.add-tag-btn');
+            
+            if (wrapper) wrapper.remove();
+            if (addBtn) addBtn.style.display = 'flex';
+        }
+        
+        function addTag(name) {
+            name = name.trim();
+            if (!name || !currentPageId) return;
+            
+            const page = pages.find(p => p.id === currentPageId);
+            if (!page) return;
+            
+            if (!page.tags) page.tags = [];
+            
+            // Check for duplicate
+            if (page.tags.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+                showToast('Tag already exists');
+                cancelTagInput();
+                return;
+            }
+            
+            // Assign a random color
+            const color = tagColors[Math.floor(Math.random() * tagColors.length)];
+            
+            page.tags.push({ name, color });
+            savePagesToLocal();
+            renderTagsContainer();
+            renderSidebarTags();
+            showToast('Tag added!');
+        }
+        
+        function removeTag(index) {
+            if (!currentPageId) return;
+            
+            const page = pages.find(p => p.id === currentPageId);
+            if (!page || !page.tags) return;
+            
+            page.tags.splice(index, 1);
+            savePagesToLocal();
+            renderTagsContainer();
+            renderSidebarTags();
+        }
+        
+        function renderSidebarTags() {
+            const container = document.getElementById('sidebarTagsList');
+            const filterSection = document.getElementById('sidebarTagsFilter');
+            
+            if (!container || !filterSection) return;
+            
+            const allTags = getAllTags();
+            
+            if (allTags.length === 0) {
+                filterSection.style.display = 'none';
+                return;
+            }
+            
+            filterSection.style.display = 'block';
+            
+            let html = `<span class="sidebar-tag ${!activeTagFilter ? 'active' : ''}" onclick="filterByTag(null)">All</span>`;
+            allTags.forEach(tag => {
+                html += `<span class="sidebar-tag ${activeTagFilter === tag ? 'active' : ''}" onclick="filterByTag('${tag}')">${tag}</span>`;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function filterByTag(tagName) {
+            activeTagFilter = tagName;
+            renderSidebarTags();
+            filterPagesByTag();
+        }
+        
+        function filterPagesByTag() {
+            const pageItems = document.querySelectorAll('.page-item');
+            
+            pageItems.forEach(item => {
+                const pageId = item.dataset.pageId;
+                const page = pages.find(p => p.id === pageId);
+                
+                if (!activeTagFilter) {
+                    item.style.display = 'flex';
+                    return;
+                }
+                
+                if (page && page.tags && page.tags.some(t => t.name === activeTagFilter)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
     </script>
 
 </body>
