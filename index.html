@@ -15,6 +15,61 @@
     
     <!-- Google API -->
     <script src="https://apis.google.com/js/api.js"></script>
+
+        <script>
+            function updateToolbarTimeWidget() {
+                const widget = document.getElementById('toolbarTimeWidget');
+                if (!widget) return;
+                const formatSelect = document.getElementById('timeFormatSelect');
+                const showSecondsSelect = document.getElementById('showSecondsSelect');
+                const format = formatSelect ? formatSelect.value : '12';
+                const showSeconds = showSecondsSelect ? showSecondsSelect.value === 'true' : true;
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes().toString().padStart(2, '0');
+                let seconds = now.getSeconds().toString().padStart(2, '0');
+                let timeStr = '';
+                if (format === '24') {
+                    timeStr = hours.toString().padStart(2, '0') + ':' + minutes;
+                    if (showSeconds) timeStr += ':' + seconds;
+                } else {
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12;
+                    timeStr = hours + ':' + minutes;
+                    if (showSeconds) timeStr += ':' + seconds;
+                    timeStr += ' ' + ampm;
+                }
+                widget.textContent = timeStr;
+            }
+            function toggleToolbarTimeControls(e) {
+                e.stopPropagation();
+                const controls = document.getElementById('toolbarTimeControls');
+                if (!controls) return;
+                controls.style.display = controls.style.display === 'none' ? 'inline-flex' : 'none';
+            }
+            function hideToolbarTimeControls() {
+                const controls = document.getElementById('toolbarTimeControls');
+                if (controls) controls.style.display = 'none';
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                updateToolbarTimeWidget();
+                setInterval(updateToolbarTimeWidget, 1000);
+                const formatSelect = document.getElementById('timeFormatSelect');
+                const showSecondsSelect = document.getElementById('showSecondsSelect');
+                if (formatSelect) formatSelect.addEventListener('change', updateToolbarTimeWidget);
+                if (showSecondsSelect) showSecondsSelect.addEventListener('change', updateToolbarTimeWidget);
+                const gearBtn = document.getElementById('toolbarTimeGear');
+                if (gearBtn) gearBtn.addEventListener('click', toggleToolbarTimeControls);
+                document.addEventListener('click', function(e) {
+                    // Only hide if click is outside the time widget area
+                    const timeElegant = document.querySelector('.toolbar-time-elegant');
+                    if (timeElegant && !timeElegant.contains(e.target)) {
+                        hideToolbarTimeControls();
+                    }
+                });
+            });
+        </script>
     
     <style>
         * {
@@ -37,6 +92,13 @@
             --status-bar-height: 30px;
         }
 
+            .toolbar-time-widget {
+                padding: 0 12px;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+            }
+
         /* Predefined Themes */
         [data-theme="dark"] {
             --bg-primary: #191919;
@@ -49,8 +111,54 @@
             --editor-bg: #191919;
             --code-bg: #2d2d2d;
         }
-        
-        /* ... existing themes ... */
+
+        [data-theme="sepia"] {
+            --bg-primary: #f4ecd8;
+            --bg-secondary: #ebe3cf;
+            --bg-hover: #ddd5c1;
+            --text-primary: #5c4b37;
+            --text-secondary: #8b7355;
+            --border: #d4c9b5;
+            --accent: #b8860b;
+            --editor-bg: #f4ecd8;
+            --code-bg: #ebe3cf;
+        }
+
+        [data-theme="forest"] {
+            --bg-primary: #1a2f1a;
+            --bg-secondary: #243524;
+            --bg-hover: #2e432e;
+            --text-primary: #c8e6c8;
+            --text-secondary: #8fbc8f;
+            --border: #3d5c3d;
+            --accent: #4caf50;
+            --editor-bg: #1a2f1a;
+            --code-bg: #243524;
+        }
+
+        [data-theme="ocean"] {
+            --bg-primary: #0d1b2a;
+            --bg-secondary: #1b2838;
+            --bg-hover: #233545;
+            --text-primary: #e0e1dd;
+            --text-secondary: #a8dadc;
+            --border: #2c4a5e;
+            --accent: #00b4d8;
+            --editor-bg: #0d1b2a;
+            --code-bg: #1b2838;
+        }
+
+        [data-theme="sunset"] {
+            --bg-primary: #2d1b2d;
+            --bg-secondary: #3d2a3d;
+            --bg-hover: #4d394d;
+            --text-primary: #f5e6e8;
+            --text-secondary: #d4a5a5;
+            --border: #5d4a5d;
+            --accent: #ff6b6b;
+            --editor-bg: #2d1b2d;
+            --code-bg: #3d2a3d;
+        }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -185,6 +293,123 @@
             border-color: var(--accent);
             color: var(--accent);
             background: var(--bg-hover);
+        }
+
+        /* Sidebar Todo Section */
+        .sidebar-todo-section {
+            margin-top: 16px;
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            overflow-y: auto;
+            max-height: 40vh;
+        }
+
+        .sidebar-todo-header {
+            margin-bottom: 12px;
+        }
+
+        .sidebar-todo-header h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .sidebar-todo-section .todo-input-section {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .sidebar-todo-section .todo-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 12px;
+        }
+
+        .sidebar-todo-section .todo-add-btn {
+            padding: 6px 10px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: opacity 0.2s;
+        }
+
+        .sidebar-todo-section .todo-add-btn:hover {
+            opacity: 0.9;
+        }
+
+        .sidebar-todo-section .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar-todo-section .todo-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 8px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .sidebar-todo-section .todo-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .sidebar-todo-section .todo-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-todo-section .todo-text {
+            flex: 1;
+            color: var(--text-primary);
+            font-size: 12px;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .sidebar-todo-section .todo-text.completed {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .sidebar-todo-section .todo-delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-todo-section .todo-delete-btn:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+        }
+
+        .sidebar-todo-section .todo-empty {
+            text-align: center;
+            padding: 20px 10px;
+            color: var(--text-secondary);
+            font-size: 12px;
         }
 
         /* Main Content Area */
@@ -356,6 +581,8 @@
                 transform: translateY(0);
             }
         }
+
+
 
         .theme-panel-header {
             margin-bottom: 20px;
@@ -1084,6 +1311,24 @@
             <button class="new-page-btn" onclick="createNewPage()">
                 <i class="fas fa-plus"></i> New Page
             </button>
+            
+            <!-- Todo Section in Sidebar -->
+            <div class="sidebar-todo-section">
+                <div class="sidebar-todo-header">
+                    <h4>✓ Todo List</h4>
+                </div>
+                
+                <div class="todo-input-section">
+                    <input type="text" class="todo-input" id="todoInput" placeholder="Add a task..." onkeypress="if(event.key==='Enter') addTodo()">
+                    <button class="todo-add-btn" onclick="addTodo()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <div class="todo-list" id="todoList">
+                    <div class="todo-empty">No tasks yet</div>
+                </div>
+            </div>
         </div>
 
         <!-- Main Content -->
@@ -1138,6 +1383,25 @@
                 <div class="word-count-display" id="wordCountDisplay">
                     0 words
                 </div>
+                    <div class="toolbar-time-elegant" style="margin-left:16px; display:flex; align-items:center; gap:12px; background:var(--bg-hover); border-radius:8px; padding:4px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.04); position:relative;">
+                        <span style="display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-clock" style="color:var(--accent); font-size:15px;"></i>
+                            <span class="toolbar-time-widget" id="toolbarTimeWidget" style="font-weight:600; font-size:15px; color:var(--text-primary); min-width:70px; text-align:left;"></span>
+                            <button id="toolbarTimeGear" style="background:none; border:none; margin-left:6px; cursor:pointer; padding:0;">
+                                <i class="fas fa-cog" style="color:var(--text-secondary); font-size:15px;"></i>
+                            </button>
+                        </span>
+                        <span id="toolbarTimeControls" style="display:none; align-items:center; gap:6px; margin-left:10px;">
+                            <select id="timeFormatSelect" style="font-size:13px; padding:2px 8px; border-radius:5px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-secondary);">
+                                <option value="12">12h</option>
+                                <option value="24">24h</option>
+                            </select>
+                            <select id="showSecondsSelect" style="font-size:13px; padding:2px 8px; border-radius:5px; border:1px solid var(--border); background:var(--bg-primary); color:var(--text-secondary);">
+                                <option value="true">Sec</option>
+                                <option value="false">No Sec</option>
+                            </select>
+                        </span>
+                    </div>
             </div>
 
             <!-- Editor -->
@@ -1469,6 +1733,19 @@
             }
         };
 
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
         // Initialize the app
         function initApp() {
             loadPagesFromLocal();
@@ -1514,6 +1791,114 @@
             if (panel.classList.contains('active')) {
                 updatePageSelectorList();
             }
+        }
+
+        // Todo List Functions
+        let todos = [];
+
+        function loadTodos() {
+            try {
+                const stored = localStorage.getItem('noteflow_todos');
+                if (stored && stored !== 'undefined' && stored !== 'null') {
+                    todos = JSON.parse(stored);
+                    console.log('Loaded todos:', todos);
+                } else {
+                    todos = [];
+                    console.log('No todos found in storage');
+                }
+            } catch (e) {
+                console.error('Error loading todos:', e);
+                todos = [];
+            }
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (text === '') {
+                console.log('Empty todo, not adding');
+                return;
+            }
+            
+            const todo = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            console.log('Adding todo:', todo);
+            todos.unshift(todo);
+            console.log('Todos array now:', todos);
+            saveTodos();
+            renderTodos();
+            input.value = '';
+            console.log('Todo added and rendered');
+        }
+
+        function toggleTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                saveTodos();
+                renderTodos();
+            }
+        }
+
+        function deleteTodo(id) {
+            todos = todos.filter(t => t.id !== id);
+            saveTodos();
+            renderTodos();
+        }
+
+        function saveTodos() {
+            try {
+                localStorage.setItem('noteflow_todos', JSON.stringify(todos));
+                console.log('Saved todos:', todos);
+            } catch (e) {
+                console.error('Error saving todos:', e);
+            }
+        }
+
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            
+            if (!todoList) {
+                console.error('Todo list element not found');
+                return;
+            }
+            
+            console.log('Rendering todos, count:', todos.length);
+            
+            if (!todos || todos.length === 0) {
+                todoList.innerHTML = '<div class="todo-empty">No tasks yet</div>';
+                return;
+            }
+            
+            todoList.innerHTML = todos.map(todo => `
+                <div class="todo-item">
+                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                           onchange="toggleTodo(${todo.id})">
+                    <span class="todo-text ${todo.completed ? 'completed' : ''}">${escapeHtml(todo.text)}</span>
+                    <button class="todo-delete-btn" onclick="deleteTodo(${todo.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+            
+            console.log('Todos rendered successfully');
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
         }
 
         function setApplyMode(mode) {
@@ -1711,7 +2096,18 @@
                           <li><kbd>Ctrl/Cmd + N</kbd> &mdash; New page</li>
                           <li><kbd>Ctrl/Cmd + Shift + T</kbd> &mdash; Open theme panel</li>
                           <li><kbd>Esc</kbd> &mdash; Close modals and panels</li>
-                        </ul>`,
+                          <li><kbd>Enter</kbd> &mdash; Add new todo (when in todo input field)</li>
+                        </ul>
+
+                        <h3><i class="fas fa-check-square"></i> Todo List</h3>
+                        <p>The todo list is always visible in the left sidebar below your pages. Add tasks, check them off, delete them, and they'll persist automatically.</p>
+
+                        <h3><i class="fas fa-clock"></i> Time Widget</h3>
+                        <p>The toolbar displays a live time widget with a clock icon. Click the gear icon to toggle between 12/24 hour format and show/hide seconds.</p>
+
+                        <h3><i class="fas fa-palette"></i> Theme System</h3>
+                        <p>Choose from 6 themes: Default (light), Dark, Sepia, Forest, Ocean, and Sunset. Apply to current page, all pages, or specific pages.</p>
+                    `,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     theme: 'default'
@@ -2397,9 +2793,23 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('=== Page Loading ===');
+            
             initApp();
            
             initGoogleDrive();
+            
+            // Initialize todo list
+            console.log('Loading todos...');
+            loadTodos();
+            console.log('Todos after load:', todos);
+            renderTodos();
+            
+            // Test localStorage
+            console.log('Testing localStorage...');
+            localStorage.setItem('test_key', 'test_value');
+            console.log('Test read:', localStorage.getItem('test_key'));
+            console.log('Stored todos key:', localStorage.getItem('noteflow_todos'));
        
         });
 
@@ -2416,5 +2826,4 @@
 
 </body>
 </html>
-
 
