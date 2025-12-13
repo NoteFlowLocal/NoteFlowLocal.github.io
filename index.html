@@ -8,7 +8,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Fira+Sans:wght@400;500;700&family=Montserrat:wght@400;500;700&family=Source+Sans+Pro:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -403,13 +403,13 @@
             position: fixed;
             background: var(--bg-primary);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 18px;
+            padding: 36px 48px 32px 48px;
+            box-shadow: 0 12px 56px 0 rgba(0, 0, 0, 0.24);
             z-index: 1000;
-            width: 320px;
-            max-height: 400px;
-            overflow-y: auto;
+            width: 640px;
+            max-height: 700px;
+            overflow: visible;
             display: none;
         }
 
@@ -476,10 +476,10 @@
 
         .emoji-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 4px;
-            margin-bottom: 10px;
-            max-height: 200px;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+            max-height: 320px;
             overflow-y: auto;
         }
 
@@ -505,14 +505,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border);
         }
 
         .emoji-picker-title {
             font-weight: 600;
-            font-size: 14px;
+            font-size: 18px;
         }
 
         .emoji-picker-grid {
@@ -858,7 +858,7 @@
             background: var(--bg-primary);
             position: sticky;
             top: 0;
-            z-index: 5;
+            z-index: 100;
             display: flex;
             align-items: center;
         }
@@ -910,6 +910,7 @@
             align-items: center;
             background: var(--bg-primary);
             overflow-x: auto;
+            overflow-y: visible;
             scroll-behavior: smooth;
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE/Edge */
@@ -1975,8 +1976,6 @@
         }
 
         .toolbar {
-            position: relative;
-            z-index: 50;
             padding: 12px 20px;
             display: flex;
             align-items: center;
@@ -2974,60 +2973,10 @@
                 
                 <!-- Font Settings Dropdown -->
                 <div class="toolbar-dropdown" style="position: relative; margin-left: 8px;">
-                    <button class="toolbar-btn" onclick="toggleFontPanel()" title="Font & Display Settings" style="display: flex; align-items: center; gap: 4px;">
+                    <button class="toolbar-btn" id="fontPanelBtn" onclick="toggleFontPanel()" title="Font & Display Settings" style="display: flex; align-items: center; gap: 4px;">
                         <i class="fas fa-font"></i>
                         <i class="fas fa-caret-down" style="font-size: 10px;"></i>
                     </button>
-                    <div id="fontSettingsPanel" class="toolbar-font-panel" style="display: none; position: absolute; top: 100%; right: 0; margin-top: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 15px; min-width: 220px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000;">
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
-                                <i class="fas fa-font" style="margin-right: 5px;"></i>Font Family
-                            </label>
-                            <select id="fontFamilySelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
-                                <option value="'Inter', sans-serif">Inter (Default)</option>
-                                <option value="'Georgia', serif">Georgia</option>
-                                <option value="'Times New Roman', serif">Times New Roman</option>
-                                <option value="'Arial', sans-serif">Arial</option>
-                                <option value="'Helvetica', sans-serif">Helvetica</option>
-                                <option value="'Courier New', monospace">Courier New</option>
-                                <option value="'Verdana', sans-serif">Verdana</option>
-                                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                                <option value="'Palatino', serif">Palatino</option>
-                            </select>
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
-                                <i class="fas fa-text-height" style="margin-right: 5px;"></i>Font Size
-                            </label>
-                            <select id="fontSizeSelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
-                                <option value="14px">Small (14px)</option>
-                                <option value="16px">Normal (16px)</option>
-                                <option value="18px">Large (18px)</option>
-                                <option value="20px">X-Large (20px)</option>
-                                <option value="22px">XX-Large (22px)</option>
-                            </select>
-                        </div>
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
-                                <i class="fas fa-arrows-alt-v" style="margin-right: 5px;"></i>Line Spacing
-                            </label>
-                            <select id="lineHeightSelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
-                                <option value="1.4">Compact (1.4)</option>
-                                <option value="1.6">Normal (1.6)</option>
-                                <option value="1.8">Relaxed (1.8)</option>
-                                <option value="2.0">Spacious (2.0)</option>
-                            </select>
-                        </div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border);">
-                            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
-                                <i class="fas fa-magic"></i>Animations
-                            </label>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="animationsToggleToolbar" checked onchange="toggleAnimationsFromToolbar()">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
                 </div>
                 
                     <div class="toolbar-time-elegant" style="margin-left:16px; display:flex; align-items:center; gap:12px; background:var(--bg-hover); border-radius:8px; padding:4px 14px; box-shadow:0 1px 4px rgba(0,0,0,0.04); position:relative;">
@@ -3242,6 +3191,65 @@
         </div>
     </div>
 
+    <!-- Font Settings Panel (Fixed Position) -->
+    <div id="fontSettingsPanel" style="display: none; position: fixed; top: 60px; right: 20px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; padding: 15px; min-width: 220px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); z-index: 10000;">
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                <i class="fas fa-font" style="margin-right: 5px;"></i>Font Family
+            </label>
+            <select id="fontFamilySelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                <option value="'Inter', sans-serif">Inter (Default)</option>
+                <option value="'Roboto', sans-serif">Roboto</option>
+                <option value="'Fira Sans', sans-serif">Fira Sans</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'Source Sans Pro', sans-serif">Source Sans Pro</option>
+                <option value="'Open Sans', sans-serif">Open Sans</option>
+                <option value="'IBM Plex Mono', monospace">IBM Plex Mono</option>
+                <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                <option value="'Georgia', serif">Georgia</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+                <option value="'Arial', sans-serif">Arial</option>
+                <option value="'Helvetica', sans-serif">Helvetica</option>
+                <option value="'Courier New', monospace">Courier New</option>
+                <option value="'Verdana', sans-serif">Verdana</option>
+                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                <option value="'Palatino', serif">Palatino</option>
+            </select>
+        </div>
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                <i class="fas fa-text-height" style="margin-right: 5px;"></i>Font Size
+            </label>
+            <select id="fontSizeSelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                <option value="14px">Small (14px)</option>
+                <option value="16px">Normal (16px)</option>
+                <option value="18px">Large (18px)</option>
+                <option value="20px">X-Large (20px)</option>
+                <option value="22px">XX-Large (22px)</option>
+            </select>
+        </div>
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                <i class="fas fa-arrows-alt-v" style="margin-right: 5px;"></i>Line Spacing
+            </label>
+            <select id="lineHeightSelectToolbar" onchange="applyFontSettingsFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                <option value="1.4">Compact (1.4)</option>
+                <option value="1.6">Normal (1.6)</option>
+                <option value="1.8">Relaxed (1.8)</option>
+                <option value="2.0">Spacious (2.0)</option>
+            </select>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border);">
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
+                <i class="fas fa-magic"></i>Animations
+            </label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="animationsToggleToolbar" checked onchange="toggleAnimationsFromToolbar()">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+
     <!-- Toggle Sidebar Button -->
     <button class="toggle-sidebar" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
@@ -3361,10 +3369,14 @@
     </div>
 
     <!-- Emoji Picker -->
-    <div class="emoji-picker" id="emojiPicker">
+    <div class="emoji-modal-overlay" id="emojiModalOverlay" onclick="hideEmojiPicker()"></div>
+    <div class="emoji-picker" id="emojiPicker" onclick="event.stopPropagation()">
         <div class="emoji-picker-header">
             <span class="emoji-picker-title">Choose Icon</span>
-            <button class="emoji-remove-btn" onclick="removePageIcon()">Remove</button>
+            <button class="emoji-close-btn" onclick="hideEmojiPicker()" title="Close" style="background:none;border:none;position:absolute;right:0;top:0;font-size:18px;color:var(--text-secondary);cursor:pointer;padding:2px 8px 2px 8px;border-radius:6px;transition:background 0.15s;">
+                <i class="fas fa-times"></i>
+            </button>
+            <button class="emoji-remove-btn" onclick="removePageIcon();hideEmojiPicker();" style="margin-left:8px;">Remove</button>
         </div>
         <div class="emoji-picker-grid" id="emojiGrid"></div>
     </div>
@@ -3627,13 +3639,10 @@
                         if (t.category) todoCategories.add(t.category);
                     });
                     updateCategoryFilter();
-                    console.log('Loaded todos:', todos);
                 } else {
                     todos = [];
-                    console.log('No todos found in storage');
                 }
             } catch (e) {
-                console.error('Error loading todos:', e);
                 todos = [];
             }
         }
@@ -4090,13 +4099,32 @@
         // Toolbar Font Settings Functions
         function toggleFontPanel() {
             const panel = document.getElementById('fontSettingsPanel');
-            if (panel.style.display === 'none') {
+            const btn = document.getElementById('fontPanelBtn');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                // Position the panel near the button
+                if (btn) {
+                    const rect = btn.getBoundingClientRect();
+                    panel.style.top = (rect.bottom + 8) + 'px';
+                    panel.style.right = (window.innerWidth - rect.right) + 'px';
+                }
                 panel.style.display = 'block';
                 syncToolbarFontSettings();
             } else {
                 panel.style.display = 'none';
             }
         }
+        
+        // Close font panel when clicking outside
+        // Use mousedown to prevent closing before select/input events
+        document.addEventListener('mousedown', function(e) {
+            const panel = document.getElementById('fontSettingsPanel');
+            const btn = document.getElementById('fontPanelBtn');
+            if (panel && panel.style.display === 'block') {
+                if (!panel.contains(e.target) && !btn.contains(e.target)) {
+                    panel.style.display = 'none';
+                }
+            }
+        });
 
         function syncToolbarFontSettings() {
             // Sync toolbar dropdowns with theme panel dropdowns
@@ -4142,13 +4170,7 @@
         }
 
         // Close font panel when clicking outside
-        document.addEventListener('click', function(e) {
-            const panel = document.getElementById('fontSettingsPanel');
-            const btn = e.target.closest('.toolbar-dropdown');
-            if (panel && panel.style.display === 'block' && !btn) {
-                panel.style.display = 'none';
-            }
-        });
+        // (Removed duplicate outside-close handler)
         
         // --- HELP PAGE ---
         function ensureHelpPage() {
@@ -5207,6 +5229,12 @@
                 return;
             }
 
+            // Check if Google API is loaded
+            if (typeof gapi === 'undefined' || !gapi.auth2 || !gapi.auth2.getAuthInstance()) {
+                showToast('Google API not loaded. Please check your internet connection and try again.');
+                return;
+            }
+
             if (!isGoogleSignedIn) {
                 gapi.auth2.getAuthInstance().signIn().then(uploadToDrive, (error) => {
                     showToast('Google Sign-In failed: ' + error.error);
@@ -5302,12 +5330,17 @@
             currentEmojiCategory = 'All';
             emojiSearchQuery = '';
             const picker = document.getElementById('emojiPicker');
-            
+            const overlay = document.getElementById('emojiModalOverlay');
             // Build search bar, category tabs and grid
-            let html = '<div class="emoji-search-container">';
+            let html = '';
+            html += '<div class="emoji-picker-header">';
+            html += '<span class="emoji-picker-title">Choose Icon</span>';
+            html += '<button class="emoji-close-btn" onclick="hideEmojiPicker()" title="Close" style="background:none;border:none;position:absolute;right:0;top:0;font-size:18px;color:var(--text-secondary);cursor:pointer;padding:2px 8px 2px 8px;border-radius:6px;transition:background 0.15s;"><i class="fas fa-times"></i></button>';
+            html += '<button class="emoji-remove-btn" onclick="removePageIcon();hideEmojiPicker();" style="margin-left:8px;">Remove</button>';
+            html += '</div>';
+            html += '<div class="emoji-search-container">';
             html += '<input type="text" class="emoji-search" id="emojiSearch" placeholder="Search emojis..." oninput="searchEmojis(this.value)">';
             html += '</div>';
-            
             const categories = ['All', ...Object.keys(emojiCategories)];
             html += '<div class="emoji-categories">';
             categories.forEach(cat => {
@@ -5315,20 +5348,19 @@
             });
             html += '</div>';
             html += '<div class="emoji-grid" id="emojiGrid"></div>';
-            html += '<button class="emoji-remove-btn" onclick="removePageIcon()"><i class="fas fa-times"></i> Remove Icon</button>';
-            
             picker.innerHTML = html;
             renderEmojiGrid();
-            
-            // Position picker near the click
-            const pageItem = document.querySelector(`[data-page-id="${pageId}"]`);
-            if (pageItem) {
-                const rect = pageItem.getBoundingClientRect();
-                picker.style.top = Math.min(rect.bottom + 5, window.innerHeight - 400) + 'px';
-                picker.style.left = Math.min(rect.left, window.innerWidth - 340) + 'px';
-            }
-            
+            // Center modal and show overlay
+            picker.style.left = '50%';
+            picker.style.top = '50%';
+            picker.style.transform = 'translate(-50%, -50%)';
             picker.classList.add('active');
+            if (overlay) overlay.classList.add('active');
+            // Focus search input
+            setTimeout(() => {
+                const searchInput = document.getElementById('emojiSearch');
+                if (searchInput) searchInput.focus();
+            }, 100);
             
             // Focus search input
             setTimeout(() => {
@@ -6067,7 +6099,7 @@
             
             if (targetPage) {
                 // Add a space after the link so cursor can escape the span
-                const linkHtml = `<span class="page-link" data-page-id="${targetPage.id}" onclick="loadPage('${targetPage.id}')" contenteditable="false">📄 ${targetPage.title}</span>&nbsp;`;
+                const linkHtml = '<span class="page-link" data-page-id="' + targetPage.id + '" onclick="loadPage(\'' + targetPage.id + '\')" contenteditable="false">\u{1F4C4} ' + targetPage.title + '</span>&nbsp;';
                 insertHtmlAtCursor(linkHtml);
                 showToast('Page link inserted!');
             } else {
@@ -6249,24 +6281,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('=== Page Loading ===');
-            
             initApp();
-           
             initGoogleDrive();
             
             // Initialize todo list
-            console.log('Loading todos...');
             loadTodos();
-            console.log('Todos after load:', todos);
             renderTodos();
-            
-            // Test localStorage
-            console.log('Testing localStorage...');
-            localStorage.setItem('test_key', 'test_value');
-            console.log('Test read:', localStorage.getItem('test_key'));
-            console.log('Stored todos key:', localStorage.getItem('noteflow_todos'));
-       
         });
 
         window.addEventListener('beforeunload', savePage);
@@ -6769,7 +6789,7 @@
             // Update size indicator
             const indicator = resizeState.element.querySelector('.size-indicator');
             if (indicator) {
-                indicator.textContent = `${Math.round(newWidth)} × ${Math.round(newHeight)}`;
+                indicator.textContent = Math.round(newWidth) + ' x ' + Math.round(newHeight);
             }
         }
         
@@ -6967,5 +6987,4 @@
 
 </body>
 </html>
-
 
