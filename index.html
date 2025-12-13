@@ -130,7 +130,7 @@
             box-sizing: border-box;
         }
 
-        :root {
+    :root {
             --bg-primary: #ffffff;
             --bg-secondary: #f7f7f5;
             --bg-hover: #efefef;
@@ -142,6 +142,10 @@
             --editor-bg: #ffffff;
             --code-bg: #f7f7f5;
             --status-bar-height: 30px;
+            /* Universal glass variables (tweak per theme below) */
+            --glass-01: rgba(255, 255, 255, 0.85);
+            --glass-02: rgba(255, 255, 255, 0.68);
+            --glass-border: rgba(0, 0, 0, 0.06);
         }
 
             .toolbar-time-widget {
@@ -152,7 +156,7 @@
             }
 
         /* Predefined Themes */
-        [data-theme="dark"] {
+    [data-theme="dark"] {
             --bg-primary: #191919;
             --bg-secondary: #202020;
             --bg-hover: #2c2c2c;
@@ -162,9 +166,12 @@
             --accent: #3794ff;
             --editor-bg: #191919;
             --code-bg: #2d2d2d;
+            --glass-01: rgba(255, 255, 255, 0.04);
+            --glass-02: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.08);
         }
 
-        [data-theme="sepia"] {
+    [data-theme="sepia"] {
             --bg-primary: #f4ecd8;
             --bg-secondary: #ebe3cf;
             --bg-hover: #ddd5c1;
@@ -174,9 +181,12 @@
             --accent: #b8860b;
             --editor-bg: #f4ecd8;
             --code-bg: #ebe3cf;
+            --glass-01: rgba(255, 255, 255, 0.6);
+            --glass-02: rgba(255, 255, 255, 0.8);
+            --glass-border: rgba(0, 0, 0, 0.06);
         }
 
-        [data-theme="forest"] {
+    [data-theme="forest"] {
             --bg-primary: #1a2f1a;
             --bg-secondary: #243524;
             --bg-hover: #2e432e;
@@ -186,9 +196,12 @@
             --accent: #4caf50;
             --editor-bg: #1a2f1a;
             --code-bg: #243524;
+            --glass-01: rgba(255, 255, 255, 0.03);
+            --glass-02: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.06);
         }
 
-        [data-theme="ocean"] {
+    [data-theme="ocean"] {
             --bg-primary: #0d1b2a;
             --bg-secondary: #1b2838;
             --bg-hover: #233545;
@@ -198,9 +211,12 @@
             --accent: #00b4d8;
             --editor-bg: #0d1b2a;
             --code-bg: #1b2838;
+            --glass-01: rgba(255, 255, 255, 0.04);
+            --glass-02: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.06);
         }
 
-        [data-theme="sunset"] {
+    [data-theme="sunset"] {
             --bg-primary: #2d1b2d;
             --bg-secondary: #3d2a3d;
             --bg-hover: #4d394d;
@@ -210,6 +226,9 @@
             --accent: #ff6b6b;
             --editor-bg: #2d1b2d;
             --code-bg: #3d2a3d;
+            --glass-01: rgba(255, 255, 255, 0.05);
+            --glass-02: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.06);
         }
 
         body {
@@ -227,12 +246,14 @@
             width: 100vw;
         }
 
-        /* Sidebar Styling */
+        /* Sidebar Styling - Liquid Glass */
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-right: 1px solid rgba(255,255,255,0.08);
             display: flex;
             flex-direction: column;
             transition: width 0.3s ease, min-width 0.3s ease;
@@ -258,8 +279,10 @@
             left: calc(var(--sidebar-width) - 14px);
             width: 28px;
             height: 28px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.08);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            backdrop-filter: blur(12px) saturate(150%);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -267,14 +290,15 @@
             justify-content: center;
             z-index: 100;
             color: var(--text-secondary);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            transition: left 0.3s ease, background 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transition: left 0.3s ease, background 0.2s ease, transform 0.2s ease;
             font-size: 12px;
         }
 
         .sidebar-toggle-btn:hover {
-            background: var(--bg-hover);
+            background: rgba(255,255,255,0.12);
             color: var(--text-primary);
+            transform: scale(1.05);
         }
 
         .sidebar-toggle-btn.collapsed {
@@ -294,7 +318,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
         }
 
         .app-title {
@@ -307,22 +332,126 @@
 
         .sidebar-search {
             padding: 10px 16px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .search-input {
             width: 100%;
-            padding: 6px 10px;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-            background: var(--bg-primary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.03);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
             font-size: 13px;
             outline: none;
+            transition: border-color 0.2s, background 0.2s;
         }
         
         .search-input:focus {
             border-color: var(--accent);
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Compact focus timer with Apple-like styling */
+        .focus-timer {
+            padding: 8px 10px;
+            border-radius: 10px;
+            margin: 8px 12px 6px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background: rgba(255,255,255,0.02);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.04);
+            font-size: 13px;
+        }
+        .focus-timer .timer-top {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+        }
+        .focus-timer .timer-left {
+            display:flex;
+            align-items:center;
+            gap:10px;
+        }
+        .focus-timer .timer-mode-badge{
+            background: rgba(255,255,255,0.03);
+            color:var(--text-secondary);
+            padding:6px 10px;
+            border-radius:999px;
+            font-weight:600;
+            font-size:11px;
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+        .focus-timer .timer-display {
+            font-size:16px;
+            font-weight:700;
+            padding:6px 12px;
+            border-radius:8px;
+            background: transparent;
+            color:var(--text-primary);
+            min-width:64px;
+            text-align:center;
+            letter-spacing: 0.5px;
+        }
+        .focus-timer .timer-controls {
+            display:flex;
+            gap:8px;
+            align-items:center;
+        }
+        .focus-timer .icon-btn {
+            width:34px;
+            height:34px;
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            border-radius:8px;
+            border:1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.02);
+            color:var(--text-primary);
+            cursor:pointer;
+            font-size:13px;
+            transition: transform 0.12s ease, background 0.12s ease;
+        }
+        .focus-timer .icon-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.03); }
+        .focus-timer .icon-btn.primary{
+            background:var(--accent);
+            color:#fff;
+            border-color:transparent;
+        }
+        .focus-timer .timer-settings {
+            display:none; /* hidden by default to save space */
+            gap:8px;
+            align-items:center;
+            font-size:12px;
+            color:var(--text-secondary);
+        }
+        .focus-timer.expanded .timer-settings{ display:flex; }
+        .focus-timer .timer-settings input[type="number"]{
+            width:44px;
+            padding:6px 8px;
+            border-radius:6px;
+            border:1px solid rgba(0,0,0,0.06);
+            background:transparent;
+            color:var(--text-primary);
+            text-align:center;
+        }
+        .focus-timer .timer-progress {
+            height:6px;
+            background:rgba(0,0,0,0.05);
+            border-radius:6px;
+            overflow:hidden;
+        }
+        .focus-timer .timer-progress-bar {
+            height:100%;
+            width:0%;
+            background:var(--accent);
+            transition:width 0.25s linear;
         }
 
         .pages-list {
@@ -342,30 +471,69 @@
             transition: all 0.2s ease;
             user-select: none;
             margin: 0 8px;
-            border-radius: 4px;
+            border-radius: 8px;
+            position: relative;
             min-height: 32px;
+            background: rgba(255, 255, 255, 0.02);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
         }
 
         .page-item:hover {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
-        }
-
-        /* Drag-and-drop drop indicator styles */
-        .page-item.drop-before {
-            border-top: 3px solid var(--accent);
-        }
-        .page-item.drop-after {
-            border-bottom: 3px solid var(--accent);
-        }
-        .page-item.drop-inside {
-            box-shadow: 0 0 0 3px var(--accent) inset;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin: 0 7px;
         }
 
         .page-item.active {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
             color: var(--text-primary);
             font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 0 7px;
+        }
+
+        /* Visual drop indicators for drag-and-drop reordering */
+        .page-item.drop-before::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            top: 0;
+            height: 0;
+            border-top: 3px solid var(--accent);
+            border-radius: 3px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .page-item.drop-after::after {
+            content: '';
+            position: absolute;
+            left: 8px;
+            right: 8px;
+            bottom: 0;
+            height: 0;
+            border-bottom: 3px solid var(--accent);
+            border-radius: 3px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            transform: translateY(50%);
+            pointer-events: none;
+        }
+
+        .page-item.drop-inside {
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-left: 4px solid var(--accent);
+            margin-left: 6px;
+            padding-left: 10px;
         }
 
         .page-title-text {
@@ -412,11 +580,13 @@
 
         .emoji-picker {
             position: fixed;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 18px;
+            background: rgba(255,255,255,0.05);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            backdrop-filter: blur(32px) saturate(200%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
             padding: 36px 48px 32px 48px;
-            box-shadow: 0 12px 56px 0 rgba(0, 0, 0, 0.24);
+            box-shadow: 0 24px 80px 0 rgba(0, 0, 0, 0.25);
             z-index: 1000;
             width: 640px;
             max-height: 700px;
@@ -434,18 +604,21 @@
 
         .emoji-search {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--bg-secondary);
+            padding: 10px 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.04);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
             font-size: 13px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background 0.2s;
         }
 
         .emoji-search:focus {
             border-color: var(--accent);
+            background: rgba(255,255,255,0.06);
         }
 
         .emoji-search::placeholder {
@@ -458,7 +631,7 @@
             gap: 4px;
             margin-bottom: 10px;
             padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             max-height: 70px;
             overflow-y: auto;
         }
@@ -466,17 +639,21 @@
         .emoji-cat-btn {
             padding: 4px 8px;
             font-size: 10px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
+            background: var(--glass-01);
+            border: 1px solid var(--glass-border);
             border-radius: 12px;
             cursor: pointer;
             color: var(--text-secondary);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             white-space: nowrap;
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
         }
 
         .emoji-cat-btn:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
         }
 
         .emoji-cat-btn.active {
@@ -497,13 +674,15 @@
         .emoji-remove-btn {
             width: 100%;
             padding: 8px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 6px;
+            background: var(--glass-01);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
             cursor: pointer;
             color: var(--text-secondary);
             font-size: 12px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
         }
 
         .emoji-remove-btn:hover {
@@ -542,21 +721,23 @@
         }
 
         .emoji-option:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
         }
 
         .emoji-remove-btn {
             background: none;
-            border: 1px solid var(--border);
+            border: 1px solid var(--glass-border);
             color: var(--text-secondary);
             padding: 4px 8px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
         }
 
         .emoji-remove-btn:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
         }
 
         .page-item-icons {
@@ -577,13 +758,15 @@
 
         .new-page-btn {
             margin: 16px;
-            padding: 8px;
-            background: transparent;
-            border: 1px dashed var(--border);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
             color: var(--text-secondary);
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             text-align: center;
             font-size: 13px;
         }
@@ -591,7 +774,10 @@
         .new-page-btn:hover {
             border-color: var(--accent);
             color: var(--accent);
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
         /* Sidebar Todo Section */
@@ -624,26 +810,31 @@
         .sidebar-todo-section .todo-input {
             flex: 1;
             padding: 6px 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: var(--bg-secondary);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
             color: var(--text-primary);
             font-size: 12px;
         }
 
         .sidebar-todo-section .todo-add-btn {
             padding: 6px 10px;
-            background: var(--accent);
+            background: rgba(var(--accent-rgb, 66, 153, 225), 0.8);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
-            transition: opacity 0.2s;
+            transition: all 0.2s ease;
         }
 
         .sidebar-todo-section .todo-add-btn:hover {
-            opacity: 0.9;
+            background: rgba(var(--accent-rgb, 66, 153, 225), 0.95);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .sidebar-todo-section .todo-list {
@@ -657,13 +848,19 @@
             align-items: flex-start;
             gap: 8px;
             padding: 8px;
-            background: var(--bg-secondary);
-            border-radius: 6px;
-            transition: background 0.2s;
+            background: rgba(255, 255, 255, 0.04);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
 
         .sidebar-todo-section .todo-item:hover {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-todo-section .todo-checkbox {
@@ -722,13 +919,15 @@
         .todo-filter-btn {
             padding: 4px 8px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             color: var(--text-secondary);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
         .todo-filter-btn:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
         }
 
@@ -743,8 +942,10 @@
         .todo-progress-bar {
             flex: 1;
             height: 6px;
-            background: var(--bg-hover);
-            border-radius: 3px;
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            border-radius: 6px;
             overflow: hidden;
         }
 
@@ -764,9 +965,12 @@
 
         .todo-filter-panel, .todo-options-panel {
             display: none;
-            padding: 10px;
-            background: var(--bg-hover);
-            border-radius: 8px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
             margin-bottom: 10px;
             flex-direction: column;
             gap: 8px;
@@ -791,10 +995,12 @@
         .filter-group select, .todo-option-group select,
         .todo-option-group input {
             flex: 1;
-            padding: 4px 8px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: var(--bg-primary);
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
             color: var(--text-primary);
             font-size: 11px;
         }
@@ -853,7 +1059,7 @@
             border-radius: 10px;
         }
 
-        /* Main Content Area */
+        /* Main Content Area - Liquid Glass */
         .main-content {
             flex: 1;
             display: flex;
@@ -865,8 +1071,10 @@
 
         .toolbar-wrapper {
             position: relative;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-primary);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            backdrop-filter: blur(16px) saturate(180%);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -879,7 +1087,7 @@
             width: 32px;
             height: 100%;
             min-height: 48px;
-            background: var(--bg-primary);
+            background: rgba(255,255,255,0.02);
             border: none;
             cursor: pointer;
             display: flex;
@@ -892,7 +1100,7 @@
         }
 
         .toolbar-scroll-btn:hover {
-            background: var(--bg-hover);
+            background: rgba(255,255,255,0.06);
             color: var(--accent);
         }
 
@@ -919,7 +1127,7 @@
             flex: 1;
             gap: 12px;
             align-items: center;
-            background: var(--bg-primary);
+            background: transparent;
             overflow-x: auto;
             overflow-y: visible;
             scroll-behavior: smooth;
@@ -932,25 +1140,28 @@
         }
 
         .toolbar-btn {
-            background: none;
-            border: none;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
             color: var(--text-secondary);
             cursor: pointer;
-            padding: 6px;
-            border-radius: 4px;
+            padding: 8px 10px;
+            border-radius: 8px;
             transition: all 0.2s;
             font-size: 14px;
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
         }
 
         .toolbar-btn:hover {
-            background: var(--bg-hover);
+            background: rgba(255,255,255,0.08);
             color: var(--text-primary);
+            transform: translateY(-1px);
         }
 
         .toolbar-separator {
             width: 1px;
             height: 24px;
-            background: var(--border);
+            background: rgba(255,255,255,0.08);
             margin: 0 4px;
         }
 
@@ -958,9 +1169,12 @@
             font-size: 13px;
             color: var(--text-secondary);
             font-weight: 500;
-            padding: 4px 8px;
-            background: var(--bg-secondary);
-            border-radius: 4px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.04);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
 
         .editor-container {
@@ -991,14 +1205,19 @@
             color: var(--text-secondary);
             text-decoration: none;
             cursor: pointer;
-            transition: color 0.2s;
-            padding: 2px 6px;
-            border-radius: 4px;
+            transition: all 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
         }
 
         .breadcrumb-link:hover {
             color: var(--accent);
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
         }
 
         .breadcrumb-separator {
@@ -1044,9 +1263,12 @@
         .media-container {
             position: relative;
             margin: 16px 0;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: visible;
-            background: var(--bg-secondary);
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
         }
         
         .media-container video,
@@ -1055,7 +1277,7 @@
         }
         
         .media-container iframe {
-            background: var(--bg-primary);
+            background: transparent;
         }
         
         /* Media action button */
@@ -1085,7 +1307,9 @@
         }
         
         .media-action-btn:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
         }
         
@@ -1095,10 +1319,12 @@
             top: 100%;
             right: 0;
             margin-top: 4px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             min-width: 160px;
             z-index: 100;
             display: none;
@@ -1117,11 +1343,11 @@
             cursor: pointer;
             font-size: 13px;
             color: var(--text-primary);
-            transition: background 0.15s ease;
+            transition: all 0.15s ease;
         }
         
         .media-dropdown-item:hover {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .media-dropdown-item i {
@@ -1237,10 +1463,12 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 4px 10px;
-            background: var(--bg-hover);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            padding: 5px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
             font-size: 12px;
             color: var(--text-secondary);
             cursor: pointer;
@@ -1248,9 +1476,12 @@
         }
         
         .tag:hover {
-            background: var(--accent);
+            background: rgba(var(--accent-rgb, 66, 153, 225), 0.6);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
             color: white;
-            border-color: var(--accent);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
         .tag .tag-remove {
@@ -1346,9 +1577,11 @@
             border-radius: 10px;
             font-size: 11px;
             cursor: pointer;
-            background: var(--bg-hover);
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
             color: var(--text-secondary);
-            border: 1px solid transparent;
+            border: 1px solid var(--glass-border);
             transition: all 0.2s ease;
         }
         
@@ -1363,13 +1596,15 @@
             color: white;
         }
 
-        /* Slash Commands Menu */
+        /* Slash Commands Menu - Liquid Glass */
         .slash-menu {
             position: absolute;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            background: rgba(255,255,255,0.05);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
             max-height: 320px;
             overflow-y: auto;
             z-index: 1000;
@@ -1382,12 +1617,13 @@
         }
         
         .slash-menu-header {
-            padding: 8px 12px;
+            padding: 10px 14px;
             font-size: 11px;
             text-transform: uppercase;
             color: var(--text-secondary);
             font-weight: 600;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.02);
         }
         
         .slash-menu-item {
@@ -1401,19 +1637,22 @@
         
         .slash-menu-item:hover,
         .slash-menu-item.selected {
-            background: var(--bg-hover);
+            background: rgba(255,255,255,0.06);
         }
         
         .slash-menu-item-icon {
             width: 36px;
             height: 36px;
-            background: var(--bg-secondary);
-            border-radius: 6px;
+            background: rgba(255,255,255,0.04);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
             color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.06);
         }
         
         .slash-menu-item-content {
@@ -1438,11 +1677,13 @@
             font-size: 13px;
         }
 
-        /* Status Bar */
+        /* Status Bar - Liquid Glass */
         .status-bar {
             height: var(--status-bar-height);
-            border-top: 1px solid var(--border);
-            background: var(--bg-secondary);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            backdrop-filter: blur(16px) saturate(180%);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1459,15 +1700,17 @@
             gap: 6px;
         }
 
-        /* Theme Switcher Button */
+        /* Theme Switcher Button - Liquid Glass */
         .theme-switcher-btn {
             position: fixed;
             top: 20px;
             right: 20px;
             z-index: 100;
-            background: var(--accent);
-            color: white;
-            border: none;
+            background: rgba(255,255,255,0.08);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            backdrop-filter: blur(16px) saturate(180%);
+            color: var(--accent);
+            border: 1px solid rgba(255,255,255,0.12);
             padding: 10px;
             border-radius: 50%;
             cursor: pointer;
@@ -1476,28 +1719,31 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: transform 0.2s;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            transition: transform 0.2s, background 0.2s;
         }
 
         .theme-switcher-btn:hover {
             transform: scale(1.1);
+            background: rgba(255,255,255,0.12);
         }
 
-        /* Theme Panel */
+        /* Theme Panel - Liquid Glass */
         .theme-panel {
             position: fixed;
             top: 80px;
             right: 20px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
             padding: 20px;
             width: 320px;
             max-height: 80vh;
             overflow-y: auto;
             z-index: 200;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.2);
             display: none;
             animation: slideIn 0.3s ease;
         }
@@ -1539,11 +1785,13 @@
 
         .mode-btn {
             flex: 1;
-            padding: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
@@ -1559,8 +1807,11 @@
             display: none;
             margin-top: 15px;
             padding: 15px;
-            background: var(--bg-secondary);
-            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
 
         .page-selector.active {
@@ -1586,7 +1837,9 @@
         }
 
         .page-checkbox:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
         }
 
         .page-checkbox input[type="checkbox"] {
@@ -1720,13 +1973,15 @@
 
         .font-input-item select {
             padding: 6px 10px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: var(--bg-primary);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: var(--glass-01);
             color: var(--text-primary);
             font-size: 12px;
             cursor: pointer;
             min-width: 140px;
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
         }
 
         /* Animation Toggle */
@@ -1828,25 +2083,32 @@
         .reset-theme-btn {
             flex: 1;
             padding: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            background: var(--glass-01);
             color: var(--text-primary);
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 13px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
         }
 
         .reset-theme-btn:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
 
         /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
             min-width: var(--sidebar-width);
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            backdrop-filter: blur(20px) saturate(160%);
+            border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
@@ -1864,7 +2126,8 @@
 
         .sidebar-header {
             padding: 20px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--glass-border);
+            background: transparent;
         }
 
         .workspace-name {
@@ -1971,7 +2234,9 @@
         }
 
         .add-page-btn:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
         }
 
         /* Main Content Area */
@@ -2037,9 +2302,12 @@
             font-size: 13px;
             color: var(--text-secondary);
             font-weight: 500;
-            padding: 4px 8px;
-            background: var(--bg-secondary);
-            border-radius: 4px;
+            padding: 4px 10px;
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
         }
 
         .editor-container {
@@ -2093,24 +2361,33 @@
         }
 
         .editor blockquote {
-            border-left: 3px solid var(--text-secondary);
-            padding-left: 20px;
+            border-left: 3px solid var(--accent);
+            padding: 12px 20px;
             margin: 15px 0;
             color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border-radius: 0 10px 10px 0;
         }
 
         .editor pre {
-            background: var(--code-bg);
+            background: rgba(0, 0, 0, 0.25);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             padding: 15px;
-            border-radius: 6px;
+            border-radius: 12px;
             overflow-x: auto;
             margin: 15px 0;
         }
 
         .editor code {
-            background: var(--code-bg);
-            padding: 2px 6px;
-            border-radius: 3px;
+            background: rgba(0, 0, 0, 0.2);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            padding: 3px 8px;
+            border-radius: 6px;
             font-family: 'Courier New', monospace;
         }
 
@@ -2123,18 +2400,20 @@
 
         .editor table th,
         .editor table td {
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             padding: 10px 12px;
             text-align: left;
         }
 
         .editor table th {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.06);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
             font-weight: 600;
         }
 
         .editor table tr:hover td {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.04);
         }
 
         /* Checklist Styles */
@@ -2142,8 +2421,13 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border);
+            padding: 10px 12px;
+            margin: 4px 0;
+            background: rgba(255, 255, 255, 0.03);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
         }
 
         .editor .checklist-item:last-child {
@@ -2170,10 +2454,13 @@
         /* Collapsible Section Styles */
         .editor .collapsible-section {
             margin: 15px 0;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
             overflow: visible;
             position: relative;
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
         }
 
         .editor .collapsible-header {
@@ -2182,13 +2469,16 @@
             gap: 10px;
             padding: 12px 15px;
             padding-right: 45px;
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
             cursor: pointer;
             user-select: none;
+            border-radius: 12px 12px 0 0;
         }
 
         .editor .collapsible-header:hover {
-            background: var(--bg-secondary);
+            background: var(--glass-01);
         }
 
         .editor .collapsible-icon {
@@ -2207,7 +2497,7 @@
 
         .editor .collapsible-content {
             padding: 15px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--glass-border);
         }
 
         .editor .collapsible-section.collapsed .collapsible-content {
@@ -2221,9 +2511,11 @@
             right: 8px;
             width: 28px;
             height: 28px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 4px;
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
             display: none;
             align-items: center;
             justify-content: center;
@@ -2239,7 +2531,9 @@
         }
         
         .collapsible-action-btn:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
             color: var(--text-primary);
         }
         
@@ -2249,10 +2543,12 @@
             top: 100%;
             right: 0;
             margin-top: 4px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             min-width: 140px;
             z-index: 100;
             display: none;
@@ -2271,11 +2567,11 @@
             cursor: pointer;
             font-size: 13px;
             color: var(--text-primary);
-            transition: background 0.15s ease;
+            transition: all 0.15s ease;
         }
         
         .collapsible-dropdown-item:hover {
-            background: var(--bg-hover);
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .collapsible-dropdown-item i {
@@ -2337,8 +2633,10 @@
             align-items: center;
             gap: 4px;
             padding: 2px 8px;
-            background: var(--bg-hover);
-            border-radius: 4px;
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            border-radius: 6px;
             color: var(--accent);
             text-decoration: none;
             cursor: pointer;
@@ -2347,7 +2645,9 @@
         }
 
         .editor .page-link:hover {
-            background: var(--bg-secondary);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
         }
 
         /* Modal Styles */
@@ -2369,12 +2669,15 @@
         }
 
         .modal-content {
-            background: var(--bg-primary);
-            border-radius: 12px;
-            padding: 24px;
+            background: rgba(255,255,255,0.06);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            backdrop-filter: blur(32px) saturate(200%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 28px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.25);
         }
 
         .modal-header {
@@ -2392,17 +2695,21 @@
 
         .modal-input {
             width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
+            padding: 12px 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
             font-size: 14px;
             outline: none;
-            background: var(--bg-primary);
+            background: rgba(255,255,255,0.04);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
+            transition: border-color 0.2s, background 0.2s;
         }
 
         .modal-input:focus {
             border-color: var(--accent);
+            background: rgba(255,255,255,0.06);
         }
 
         .modal-footer {
@@ -2412,12 +2719,16 @@
         }
 
         .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
+            padding: 10px 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
+            background: rgba(255,255,255,0.04);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
             transition: opacity 0.2s;
         }
 
@@ -2431,7 +2742,9 @@
         }
 
         .btn-secondary {
-            background: var(--bg-hover);
+            background: var(--glass-01);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
         }
 
@@ -2702,10 +3015,14 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            padding: 12px 24px;
-            border-radius: 8px;
+            background: rgba(30, 30, 30, 0.85);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            color: #fff;
+            padding: 14px 28px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
             display: none;
             z-index: 2000;
             animation: slideUp 0.3s ease;
@@ -2718,11 +3035,13 @@
         /* Link Tooltip */
         .link-tooltip {
             position: fixed;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            padding: 8px 12px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 10px 14px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             display: none;
             z-index: 1000;
             gap: 8px;
@@ -2760,7 +3079,9 @@
         }
 
         .link-tooltip button:hover {
-            background: var(--bg-hover);
+            background: var(--glass-02);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
             color: var(--text-primary);
         }
 
@@ -2797,6 +3118,28 @@
             
             <div class="sidebar-search">
                 <input type="text" class="search-input" id="searchInput" placeholder="Search pages..." oninput="filterPages()">
+            </div>
+            
+            <!-- Focus Timer (compact) -->
+            <div class="focus-timer" id="focusTimer">
+                <div class="timer-top">
+                    <div class="timer-left">
+                        <div class="timer-mode-badge" id="timerMode">Timer</div>
+                        <div class="timer-display" id="timerDisplay">25:00</div>
+                    </div>
+                    <div class="timer-controls">
+                        <button id="timerStartBtn" class="icon-btn primary" title="Start"><i class="fas fa-play"></i></button>
+                        <button id="timerPauseBtn" class="icon-btn" title="Pause" style="display:none;"><i class="fas fa-pause"></i></button>
+                        <button id="timerResetBtn" class="icon-btn" title="Reset"><i class="fas fa-redo"></i></button>
+                        <button id="timerSettingsBtn" class="icon-btn" title="Settings"><i class="fas fa-cog"></i></button>
+                    </div>
+                </div>
+                <div class="timer-settings" id="timerSettings">
+                    <label style="white-space:nowrap">H <input id="hoursInput" type="number" min="0" value="0"></label>
+                    <label style="white-space:nowrap">M <input id="minutesInput" type="number" min="0" max="59" value="25"></label>
+                    <label style="white-space:nowrap">S <input id="secondsInput" type="number" min="0" max="59" value="0"></label>
+                </div>
+                <div class="timer-progress"><div class="timer-progress-bar" id="timerProgress"></div></div>
             </div>
             
             <!-- Tags Filter -->
@@ -3344,7 +3687,7 @@
                         <i class="fas fa-info-circle" style="color: var(--accent);"></i>
                         <span>Why do I need this?</span>
                     </div>
-                    <p style="line-height: 1.4;">NoteFlow is a privacy-first, local-only app. We don't have servers to store your data. To sync across devices, you use your <strong>own</strong> Google Drive, ensuring you maintain 100% ownership and control of your data.</p>
+                    <p style="line-height: 1.4;">NoteFlow is a privacy-first, local-only app. We don't have servers to store your data. To sync across devices, you use your own Google Drive, ensuring you maintain 100% ownership and control of your data.</p>
                 </div>
 
                 <p style="margin-bottom: 15px; font-size: 14px; color: var(--text-secondary);">
@@ -3505,6 +3848,159 @@
             };
         }
 
+        // -------------------- Focus Timer (single duration H:M:S) --------------------
+        const FOCUS_KEY = 'noteflow_focus_timer';
+        let focusTimer = {
+            durationSeconds: 25 * 60,
+            remaining: 25 * 60,
+            running: false,
+            intervalId: null
+        };
+
+        function formatTime(sec) {
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
+        }
+
+        function saveFocusState() {
+            const toSave = {
+                durationSeconds: focusTimer.durationSeconds,
+                remaining: focusTimer.remaining,
+                running: focusTimer.running
+            };
+            localStorage.setItem(FOCUS_KEY, JSON.stringify(toSave));
+        }
+
+        function loadFocusState() {
+            try {
+                const stored = localStorage.getItem(FOCUS_KEY);
+                if (stored) {
+                    const obj = JSON.parse(stored);
+                    focusTimer.durationSeconds = typeof obj.durationSeconds === 'number' ? obj.durationSeconds : focusTimer.durationSeconds;
+                    focusTimer.remaining = typeof obj.remaining === 'number' ? obj.remaining : focusTimer.durationSeconds;
+                    focusTimer.running = !!obj.running;
+                } else {
+                    focusTimer.remaining = focusTimer.durationSeconds;
+                }
+            } catch (e) {
+                focusTimer.remaining = focusTimer.durationSeconds;
+            }
+        }
+
+        function updateTimerUI() {
+            const display = document.getElementById('timerDisplay');
+            const modeEl = document.getElementById('timerMode');
+            const progressBar = document.getElementById('timerProgress');
+            if (!display || !modeEl || !progressBar) return;
+
+            display.textContent = formatTime(focusTimer.remaining);
+            modeEl.textContent = 'Timer';
+
+            const total = Math.max(1, focusTimer.durationSeconds);
+            const perc = Math.max(0, Math.min(100, ((total - focusTimer.remaining) / total) * 100));
+            progressBar.style.width = perc + '%';
+
+            // buttons
+            document.getElementById('timerStartBtn').style.display = focusTimer.running ? 'none' : 'inline-block';
+            document.getElementById('timerPauseBtn').style.display = focusTimer.running ? 'inline-block' : 'none';
+        }
+
+        function tickTimer() {
+            if (!focusTimer.running) return;
+            if (focusTimer.remaining > 0) {
+                focusTimer.remaining -= 1;
+                updateTimerUI();
+            } else {
+                pauseTimer();
+                focusTimer.remaining = 0;
+                saveFocusState();
+                updateTimerUI();
+                showToast('Time is up!');
+            }
+        }
+
+        function startTimer() {
+            if (focusTimer.running) return;
+            focusTimer.running = true;
+            focusTimer.intervalId = setInterval(tickTimer, 1000);
+            saveFocusState();
+            updateTimerUI();
+        }
+
+        function pauseTimer() {
+            focusTimer.running = false;
+            if (focusTimer.intervalId) {
+                clearInterval(focusTimer.intervalId);
+                focusTimer.intervalId = null;
+            }
+            saveFocusState();
+            updateTimerUI();
+        }
+
+        function setDurationFromInputs() {
+            const h = Number(document.getElementById('hoursInput')?.value || 0);
+            const m = Number(document.getElementById('minutesInput')?.value || 0);
+            const s = Number(document.getElementById('secondsInput')?.value || 0);
+            const total = Math.max(1, (h * 3600) + (m * 60) + s);
+            focusTimer.durationSeconds = total;
+            if (!focusTimer.running) focusTimer.remaining = total;
+            saveFocusState();
+            updateTimerUI();
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            setDurationFromInputs();
+            updateTimerUI();
+        }
+
+        function initFocusTimer() {
+            loadFocusState();
+            // wire up controls
+            const startBtn = document.getElementById('timerStartBtn');
+            const pauseBtn = document.getElementById('timerPauseBtn');
+            const resetBtn = document.getElementById('timerResetBtn');
+            const settingsBtn = document.getElementById('timerSettingsBtn');
+            const settingsPane = document.getElementById('timerSettings');
+            const hoursInput = document.getElementById('hoursInput');
+            const minutesInput = document.getElementById('minutesInput');
+            const secondsInput = document.getElementById('secondsInput');
+
+            // initialize H:M:S inputs from durationSeconds
+            const h = Math.floor(focusTimer.durationSeconds / 3600);
+            const m = Math.floor((focusTimer.durationSeconds % 3600) / 60);
+            const s = focusTimer.durationSeconds % 60;
+            if (hoursInput) hoursInput.value = h;
+            if (minutesInput) minutesInput.value = m;
+            if (secondsInput) secondsInput.value = s;
+
+            if (startBtn) startBtn.addEventListener('click', () => { startTimer(); });
+            if (pauseBtn) pauseBtn.addEventListener('click', () => { pauseTimer(); });
+            if (resetBtn) resetBtn.addEventListener('click', () => { resetTimer(); });
+            if (settingsBtn && settingsPane) settingsBtn.addEventListener('click', () => {
+                const container = document.getElementById('focusTimer');
+                if (container.classList.contains('expanded')) {
+                    container.classList.remove('expanded');
+                } else {
+                    container.classList.add('expanded');
+                }
+            });
+
+            [hoursInput, minutesInput, secondsInput].forEach(inp => {
+                if (!inp) return;
+                inp.addEventListener('change', () => {
+                    setDurationFromInputs();
+                });
+            });
+
+            updateTimerUI();
+            // If the timer was running when last saved, don't auto-start; keep it paused for safety
+        }
+
+        // ------------------ end Focus Timer ------------------
+
         // Initialize the app
         function initApp() {
             loadPagesFromLocal();
@@ -3530,6 +4026,8 @@
             
             renderPagesList();
             renderSidebarTags();
+            // Initialize focus timer UI
+            initFocusTimer();
             initLinkTooltip();
             initSlashCommands();
             initResizableMedia();
