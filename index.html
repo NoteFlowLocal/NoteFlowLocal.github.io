@@ -351,6 +351,17 @@
             color: var(--text-primary);
         }
 
+        /* Drag-and-drop drop indicator styles */
+        .page-item.drop-before {
+            border-top: 3px solid var(--accent);
+        }
+        .page-item.drop-after {
+            border-bottom: 3px solid var(--accent);
+        }
+        .page-item.drop-inside {
+            box-shadow: 0 0 0 3px var(--accent) inset;
+        }
+
         .page-item.active {
             background: var(--bg-hover);
             color: var(--text-primary);
@@ -4906,37 +4917,31 @@
         function renderPagesList() {
             const pagesList = document.getElementById('pagesList');
             pagesList.innerHTML = '';
-            
-            const sorted = [...pages].sort((a, b) => a.title.localeCompare(b.title));
+            // No sort: use the order in the pages array
             const pageMap = new Map(pages.map(p => [p.id, p]));
             const childrenMap = new Map();
-            
             // Build parent-child relationships
-            sorted.forEach(page => {
+            pages.forEach(page => {
                 const parts = page.title.split('::');
                 if (parts.length > 1) {
                     const parentTitle = parts.slice(0, -1).join('::');
-                    const parent = sorted.find(p => p.title === parentTitle);
+                    const parent = pages.find(p => p.title === parentTitle);
                     if (parent) {
                         if (!childrenMap.has(parent.id)) childrenMap.set(parent.id, []);
                         childrenMap.get(parent.id).push(page.id);
                     }
                 }
             });
-
             // --- DRAG AND DROP LOGIC ---
             let dragPageId = null;
             let dropTargetPageId = null;
-            let dropPosition = null; // 'inside' or 'after'
-
+            let dropPosition = null; // 'inside' or 'after' or 'before'
             // Recursive function to render page tree
-            function renderTree(pageId, depth) {
+            function renderTree(pageId, depth, parentId) {
                 const page = pageMap.get(pageId);
                 if (!page) return;
-
                 const displayTitle = page.title.split('::').pop();
                 const hasChildren = childrenMap.has(page.id);
-                
                 let themeColor = '#ccc'; // Default color
                 if (page.theme && page.theme !== 'default') {
                     if (page.theme === 'custom' && page.customTheme) {
@@ -4945,7 +4950,6 @@
                         themeColor = themes[page.theme].accent;
                     }
                 }
-
                 const pageItem = document.createElement('div');
                 pageItem.className = 'page-item';
                 pageItem.dataset.pageId = page.id;
@@ -4953,7 +4957,6 @@
                 pageItem.style.paddingLeft = (12 + depth * 20) + 'px';
                 pageItem.onclick = () => loadPage(page.id);
                 pageItem.draggable = true;
-
                 // Drag events
                 pageItem.addEventListener('dragstart', function(e) {
                     dragPageId = page.id;
@@ -4966,52 +4969,48 @@
                     dropTargetPageId = null;
                     dropPosition = null;
                     document.querySelectorAll('.page-item').forEach(item => {
-                        item.classList.remove('drop-inside', 'drop-after');
+                        item.classList.remove('drop-inside', 'drop-after', 'drop-before');
                     });
                 });
                 pageItem.addEventListener('dragover', function(e) {
                     e.preventDefault();
                     if (dragPageId && dragPageId !== page.id) {
-                        // Allow drop inside or after
                         const rect = pageItem.getBoundingClientRect();
                         const offset = e.clientY - rect.top;
-                        if (offset < rect.height / 2) {
+                        if (offset < rect.height / 3) {
+                            pageItem.classList.add('drop-before');
+                            pageItem.classList.remove('drop-after', 'drop-inside');
+                            dropPosition = 'before';
+                        } else if (offset > rect.height * 2 / 3) {
                             pageItem.classList.add('drop-after');
-                            pageItem.classList.remove('drop-inside');
+                            pageItem.classList.remove('drop-before', 'drop-inside');
                             dropPosition = 'after';
                         } else {
                             pageItem.classList.add('drop-inside');
-                            pageItem.classList.remove('drop-after');
+                            pageItem.classList.remove('drop-before', 'drop-after');
                             dropPosition = 'inside';
                         }
                         dropTargetPageId = page.id;
                     }
                 });
                 pageItem.addEventListener('dragleave', function(e) {
-                    pageItem.classList.remove('drop-inside', 'drop-after');
+                    pageItem.classList.remove('drop-inside', 'drop-after', 'drop-before');
                 });
                 pageItem.addEventListener('drop', function(e) {
                     e.preventDefault();
-                    pageItem.classList.remove('drop-inside', 'drop-after');
+                    pageItem.classList.remove('drop-inside', 'drop-after', 'drop-before');
                     if (dragPageId && dragPageId !== page.id) {
-                        handlePageDrop(dragPageId, page.id, dropPosition);
+                        handlePageDrop(dragPageId, page.id, dropPosition, parentId);
                     }
                 });
-
                 const collapseIcon = hasChildren 
                     ? `<i class="fas ${page.collapsed ? 'fa-chevron-right' : 'fa-chevron-down'}" style="width:14px; text-align:center; cursor:pointer;" onclick="event.stopPropagation(); toggleCollapse('${page.id}')"></i>`
                     : '';
-                
                 const themeIndicator = (page.theme && page.theme !== 'default') 
                     ? `<div class="page-theme-indicator" style="background:${themeColor};" title="Custom theme applied"></div>` : '';
-
-                // Page icon - show custom emoji or default file icon
                 const iconDisplay = page.icon || '📄';
                 const pageIcon = `<span class="page-icon" onclick="event.stopPropagation(); openEmojiPicker('${page.id}')" title="Click to change icon">${iconDisplay}</span>`;
-
-                // Star indicator for favorited pages
                 const starIndicator = page.starred ? '<i class="fas fa-star page-star-indicator" title="Favorite"></i>' : '';
-
                 pageItem.innerHTML = `
                     ${collapseIcon}
                     ${pageIcon}
@@ -5025,39 +5024,38 @@
                          <i class="fas fa-trash" title="Delete" onclick="event.stopPropagation(); deletePage('${page.id}')"></i>
                     </div>
                 `;
-                
                 pagesList.appendChild(pageItem);
-
                 if (hasChildren && !page.collapsed) {
-                    childrenMap.get(page.id).forEach(childId => renderTree(childId, depth + 1));
+                    childrenMap.get(page.id).forEach(childId => renderTree(childId, depth + 1, page.id));
                 }
             }
             // Start rendering from top-level pages
-            sorted.filter(p => !p.title.includes('::')).forEach(page => renderTree(page.id, 0));
+            pages.filter(p => !p.title.includes('::')).forEach(page => renderTree(page.id, 0, null));
         }
 
-        // Handle drop logic for nesting and un-nesting
-        function handlePageDrop(dragId, targetId, position) {
+        // Handle drop logic for nesting, un-nesting, and reordering
+        function handlePageDrop(dragId, targetId, position, parentId) {
             if (dragId === targetId) return;
             const dragPage = pages.find(p => p.id === dragId);
             const targetPage = pages.find(p => p.id === targetId);
             if (!dragPage || !targetPage) return;
-
-            // Remove dragPage from its current location
+            // Remove dragPage from its current location in the array
+            const dragIndex = pages.findIndex(p => p.id === dragId);
+            if (dragIndex === -1) return;
+            pages.splice(dragIndex, 1);
+            // For nesting
             const oldTitle = dragPage.title;
-            let newTitle;
+            let newTitle = dragPage.title;
             if (position === 'inside') {
-                // Make dragPage a child of targetPage
                 newTitle = targetPage.title + '::' + oldTitle.split('::').pop();
-            } else if (position === 'after') {
-                // Make dragPage a sibling after targetPage (same parent as targetPage)
+            } else if (position === 'after' || position === 'before') {
+                // Sibling: same parent as targetPage
                 const targetParts = targetPage.title.split('::');
                 const parentTitle = targetParts.slice(0, -1).join('::');
                 newTitle = parentTitle ? parentTitle + '::' + oldTitle.split('::').pop() : oldTitle.split('::').pop();
             }
             // Prevent circular nesting
             if (newTitle && (dragPage.title !== newTitle) && !newTitle.startsWith(dragPage.title + '::')) {
-                // Update dragPage and all its children
                 const oldPrefix = dragPage.title + '::';
                 const newPrefix = newTitle + '::';
                 dragPage.title = newTitle;
@@ -5066,9 +5064,27 @@
                         p.title = p.title.replace(oldPrefix, newPrefix);
                     }
                 });
-                savePagesToLocal();
-                renderPagesList();
             }
+            // Insert dragPage at the correct position in the array
+            let targetIndex = pages.findIndex(p => p.id === targetId);
+            if (position === 'after') {
+                pages.splice(targetIndex + 1, 0, dragPage);
+            } else if (position === 'before') {
+                pages.splice(targetIndex, 0, dragPage);
+            } else if (position === 'inside') {
+                // Place as first child after targetPage and its children
+                // Find last descendant of targetPage
+                let insertAt = targetIndex + 1;
+                for (let i = targetIndex + 1; i < pages.length; i++) {
+                    if (!pages[i].title.startsWith(targetPage.title + '::')) {
+                        insertAt = i;
+                        break;
+                    }
+                }
+                pages.splice(insertAt, 0, dragPage);
+            }
+            savePagesToLocal();
+            renderPagesList();
         }
 
         // Local Storage Functions
