@@ -2984,11 +2984,9 @@
             }
 
             .sidebar-toggle-btn {
-                top: 12px;
-                left: 12px;
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
+                /* Hide the floating circular toggle on small screens to avoid
+                   duplicate controls — use the hamburger `.toggle-sidebar` button instead */
+                display: none;
             }
             
             .sidebar-toggle-btn.collapsed {
