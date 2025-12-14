@@ -2948,8 +2948,10 @@
                 --sidebar-width: 280px;
             }
 
+            /* Use circular toggle on mobile (keep the floating circular control)
+               and hide the hamburger `.toggle-sidebar` to avoid duplicates. */
             .toggle-sidebar {
-                display: block;
+                display: none;
             }
             
             .sidebar {
@@ -2984,9 +2986,16 @@
             }
 
             .sidebar-toggle-btn {
-                /* Hide the floating circular toggle on small screens to avoid
-                   duplicate controls — use the hamburger `.toggle-sidebar` button instead */
-                display: none;
+                /* Show the floating circular toggle on small screens (circular UI)
+                   - keep sizing adjusted for touch targets */
+                top: 12px;
+                left: 12px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             
             .sidebar-toggle-btn.collapsed {
