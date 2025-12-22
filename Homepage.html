@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteFlow | Local-first notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Navy-blue frosted glass theme */ 
+            --bg: #041228;
+            --bg-2: #071a33;
+            --panel: rgba(10, 25, 40, 0.56); /* frosted navy panels */
+            --card: rgba(10, 25, 40, 0.36);
+            --border: rgba(255, 255, 255, 0.06);
+            --text: #e7f2fb;
+            --muted: #9bb3c6;
+            --accent: #4fb3ff; /* bright sky blue */
+            --accent-2: #7fd4ff; /* lighter accent */
+            --shadow: 0 18px 50px rgba(2, 8, 20, 0.6);
+            --radius: 16px;
+            --glass-blur: 16px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+            background: linear-gradient(180deg, #161c1d 0%, #0f1314 60%, #0d1111 100%);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(900px circle at 25% 20%, rgba(79, 179, 255, 0.10), transparent 36%),
+                        radial-gradient(1100px circle at 85% 10%, rgba(127, 204, 255, 0.06), transparent 46%);
+            backdrop-filter: blur(28px) saturate(130%);
+            filter: blur(8px);
+            opacity: 0.98;
+        }
+
+        .shell {
+            position: relative;
+            z-index: 1;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 32px 22px 80px;
+        }
+
+        .nav {
+            position: sticky;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+            background: rgba(13, 19, 35, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 28px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            font-size: 18px;
+        }
+
+        .brand .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            box-shadow: 0 0 10px rgba(120, 211, 176, 0.6);
+        }
+
+        .nav-links {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links a {
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+
+        .nav-links a:hover { color: var(--text); background: rgba(255, 255, 255, 0.04); }
+
+        h1, h2, h3 {
+            margin: 0 0 12px;
+            letter-spacing: -0.01em;
+        }
+
+        h1 { font-size: clamp(32px, 6vw, 46px); line-height: 1.12; }
+        h2 { font-size: clamp(26px, 4vw, 34px); }
+        h3 { font-size: 18px; }
+
+        p { margin: 0; color: var(--muted); line-height: 1.6; }
+
+        .eyebrow {
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        .lede { font-size: 17px; max-width: 640px; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+            cursor: pointer;
+        }
+
+        .btn.small { padding: 10px 14px; font-size: 14px; }
+
+        .btn.primary {
+            background: linear-gradient(125deg, var(--accent), var(--accent-2));
+            color: #0d1210;
+            box-shadow: 0 12px 30px rgba(120, 211, 176, 0.25);
+        }
+
+        .btn.primary:hover { transform: translateY(-1px); box-shadow: 0 14px 36px rgba(120, 211, 176, 0.3); }
+
+        .btn.ghost {
+            border-color: var(--border);
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .btn.ghost:hover { border-color: rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.05); }
+
+        .hero {
+            position: relative;
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: 28px;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            backdrop-filter: blur(16px);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .hero-copy { display: grid; gap: 16px; align-content: center; }
+
+        .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+        .quick-points {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 4px;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .point {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .point .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 8px rgba(120, 211, 176, 0.7);
+        }
+
+        .hero-visual {
+            position: relative;
+            display: grid;
+            gap: 16px;
+            align-content: center;
+        }
+
+        .image-frame {
+            padding: 12px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(14px);
+        }
+
+        .image-frame img {
+            width: 100%;
+            display: block;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            animation: floaty 14s ease-in-out infinite;
+        }
+
+        .mascot-card {
+            position: absolute;
+            bottom: -10px;
+            left: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(13, 20, 35, 0.9);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(5, 10, 25, 0.45);
+        }
+
+        .mascot-card img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .trust-bar {
+            margin-top: 28px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+            display: grid;
+            gap: 10px;
+        }
+
+        .trust-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .trust-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .trust-pill svg { color: var(--accent); }
+
+        .trust-note { color: var(--muted); font-size: 14px; }
+
+        .mascot-highlight {
+            display: grid;
+            grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+            gap: 26px;
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+            align-items: center;
+        }
+
+        .mascot-highlight .mascot-copy { display: grid; gap: 16px; }
+
+        .mascot-highlight .mascot-points {
+            display: grid;
+            gap: 10px;
+            font-size: 15px;
+            color: var(--muted);
+        }
+
+        .mascot-highlight .mascot-points strong { color: var(--text); }
+
+        .mascot-preview {
+            position: relative;
+            display: grid;
+            gap: 12px;
+            justify-items: center;
+        }
+
+        .mascot-preview .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(79, 179, 255, 0.08);
+            color: var(--accent);
+            border: 1px solid rgba(79, 179, 255, 0.28);
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        .reasons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+
+        .reason-card {
+            padding: 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+            display: grid;
+            gap: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .reason-card h3 { margin: 0; }
+
+        .section { margin-top: 64px; }
+
+        .section-header { margin-bottom: 24px; max-width: 720px; }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-card {
+            padding: 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            display: grid;
+            gap: 10px;
+        }
+
+        .icon-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, rgba(120, 211, 176, 0.18), rgba(203, 233, 134, 0.18));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text);
+        }
+
+        .steps .step-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 12px;
+        }
+
+        .step-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 12px;
+            align-items: start;
+            backdrop-filter: blur(10px);
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #0d1210;
+            font-weight: 800;
+            display: grid;
+            place-items: center;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 22px;
+            align-items: center;
+        }
+
+        .checklist {
+            display: grid;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .check {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            align-items: start;
+        }
+
+        .check-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 8px;
+            background: rgba(127, 204, 255, 0.12);
+            border: 1px solid rgba(127, 204, 255, 0.26);
+            display: grid;
+            place-items: center;
+            color: var(--accent-2);
+        }
+
+        .final-cta {
+            text-align: center;
+            padding: 34px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(120, 211, 176, 0.12), rgba(203, 233, 134, 0.08));
+            box-shadow: var(--shadow);
+        }
+
+        .final-cta p { margin: 10px 0 18px; }
+
+        @keyframes floaty {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @media (max-width: 960px) {
+            .nav { position: relative; }
+            .hero { grid-template-columns: 1fr; padding: 24px; }
+            .hero-visual { order: -1; }
+            .mascot-card { position: relative; bottom: auto; left: auto; }
+            .preview-grid,
+            .mascot-highlight { grid-template-columns: 1fr; }
+            .shell { padding: 22px 18px 70px; }
+            .mascot-preview .badge { position: static; }
+        }
+
+        @media (max-width: 640px) {
+            .nav-links { width: 100%; justify-content: flex-start; }
+            .hero { padding: 20px; }
+            .cta-row { width: 100%; }
+            .btn { width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="backdrop"></div>
+    <div class="shell">
+        <header class="nav">
+            <div class="brand">
+                <span class="dot"></span>
+                <span>NoteFlow</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how">How it works</a>
+                <a class="btn ghost small" href="NoteFlow.html">Launch</a>
+            </div>
+        </header>
+
+        <main>
+            <section class="hero" id="top">
+                <div class="hero-copy">
+                    <p class="eyebrow">Local-first workspace</p>
+                    <h1>Single-file notes with a frosted, offline-first experience.</h1>
+                    <p class="lede">
+                        NoteFlow ships as a single HTML file that runs fully in your browser. Create nested pages,
+                        paste images, use templates and slash-commands, and export a JSON backup whenever you like.
+                        No accounts or background syncs — your data stays with you unless you choose otherwise.
+                    </p>
+                    <div class="cta-row">
+                        <a class="btn primary" href="NoteFlow.html">Get started</a>
+                        <a class="btn ghost" href="#features">See what’s inside</a>
+                    </div>
+                    <div class="quick-points">
+                        <span class="point"><span class="dot"></span>Data stays on your device</span>
+                        <span class="point"><span class="dot"></span>Templates & slash-commands</span>
+                        <span class="point"><span class="dot"></span>Image paste & uploads</span>
+                        <span class="point"><span class="dot"></span>Export / import (JSON)</span>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="image-frame">
+                        <img src="assets/noteflow-screenshot.png" alt="NoteFlow interface preview">
+                    </div>
+                    <div class="mascot-card">
+                        <img src="assets/Mascot.png" alt="NoteFlow mascot">
+                        <div>
+                            <div class="badge">Mascot</div>
+                            <p>Your friendly guide while you stay fully local.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+                <section class="trust-bar" aria-label="Local-first assurances">
+                <div class="trust-pills">
+                    <span class="trust-pill">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 7l8-4 8 4-8 4-8-4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                            <path d="M4 12l8 4 8-4" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                        </svg>
+                        Single-file workspace
+                    </span>
+                    <span class="trust-pill">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 20a8 8 0 100-16 8 8 0 000 16z" stroke="currentColor" stroke-width="1.4"/>
+                            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        No sign-up or sync
+                    </span>
+                    <span class="trust-pill">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 4h8v4M15 20H7v-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M15 4L9 10M15 20l-6-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                        </svg>
+                        One-click JSON exports
+                    </span>
+                </div>
+                <div class="trust-note">Everything loads locally by default. Export to JSON or optionally configure your own Google Drive credentials for backups (see README).</div>
+            </section>
+
+            <section class="section" id="features">
+                <div class="section-header">
+                    <p class="eyebrow">Focused on control</p>
+                    <h2>Designed to keep your notes close</h2>
+                    <p>Local-first by design: your data never leaves your machine unless you export it. NoteFlow brings a calm interface, glass panels, and dependable structure for everyday work.</p>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature-card">
+                        <div class="icon-circle" aria-hidden>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                                <path d="M10 12l2 2 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Rich editor & content</h3>
+                        <p>Headings, lists, code blocks, callouts, tables, and inline embeds. Paste images directly — files are embedded as base64 if needed.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="icon-circle" aria-hidden>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 8h10M7 12h10M7 16h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                                <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.4"/>
+                            </svg>
+                        </div>
+                        <h3>Pages, templates, and organization</h3>
+                        <p>Deeply nested pages via a simple separator, reusable templates (meeting notes, journals, plans), pin and star important pages.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="icon-circle" aria-hidden>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 8.5A2.5 2.5 0 018.5 6H12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                                <path d="M18 15.5A2.5 2.5 0 0115.5 18H12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                                <path d="M14 3h4v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Fast themes & focus</h3>
+                        <p>Multiple theme presets, per-page theming, and a focus mode to remove distractions and boost productivity.</p>
+                    </article>
+                    <article class="feature-card">
+                        <div class="icon-circle" aria-hidden>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="1.4"/>
+                            </svg>
+                        </div>
+                        <h3>Export, history & backups</h3>
+                        <p>One-click JSON export/import, 50-state undo/redo per page, and an optional Google Drive backup that uses your own credentials.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="section" aria-labelledby="why-local">
+                <div class="section-header">
+                    <p class="eyebrow">Why local-first</p>
+                    <h2 id="why-local">Stay fast, private, and portable</h2>
+                    <p>NoteFlow keeps essentials inside one HTML file so you can move, rename, and back up without worrying about accounts or outages.</p>
+                </div>
+                <div class="reasons">
+                    <article class="reason-card">
+                        <div class="icon-circle">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 3l7 4v5c0 4-3 7-7 9-4-2-7-5-7-9V7l7-4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3>Private by default</h3>
+                        <p>No background syncs, no accounts&mdash;just your notes stored in browser storage.</p>
+                    </article>
+                    <article class="reason-card">
+                        <div class="icon-circle">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 8h10M7 12h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                                <path d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" stroke="currentColor" stroke-width="1.4"/>
+                            </svg>
+                        </div>
+                        <h3>Portable everywhere</h3>
+                        <p>Rename it to <code>index.html</code> and carry the full experience on a USB or cloud folder.</p>
+                    </article>
+                    <article class="reason-card">
+                        <div class="icon-circle">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 13l3 3 5-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M5 12a7 7 0 1114 0 7 7 0 01-14 0z" stroke="currentColor" stroke-width="1.4"/>
+                            </svg>
+                        </div>
+                        <h3>Backups you control</h3>
+                        <p>Export to JSON whenever you want; keep your own cadence and storage location.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="section steps" id="how">
+                <div class="section-header">
+                    <p class="eyebrow">Fast setup</p>
+                    <h2>Start in under a minute</h2>
+                    <p>NoteFlow is intentionally simple to start. Download, open, and save locally. Backups are yours to control.</p>
+                </div>
+                <div class="step-list">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h3>Open the HTML</h3>
+                            <p>Download or rename it to index.html. Double-click to open in any modern browser.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h3>Build your space</h3>
+                            <p>Create nested pages, add tasks, drop images, and reuse templates for recurring notes.</p>
+                        </div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h3>Save and back up</h3>
+                            <p>Work saves to localStorage. Export everything as JSON or connect your own Drive keys if desired.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section mascot-highlight" id="mascot">
+                <div class="mascot-copy">
+                    <p class="eyebrow">Meet Flow</p>
+                    <h2>Your offline companion keeps watch while you focus</h2>
+                    <p>Flow, the NoteFlow mascot, travels inside the single HTML file just like the rest of your workspace. Think of Flow as a reminder that everything stays on your machine.</p>
+                    <div class="mascot-points">
+                        <p><strong>Lightweight presence.</strong> The illustration is embedded locally and requires zero network calls.</p>
+                        <p><strong>Friendly reassurance.</strong> Flow shows up whenever you open the homepage so you know you are working fully offline.</p>
+                        <p><strong>Yours to customize.</strong> Swap the PNG with another mascot if you want to personalize your copy.</p>
+                    </div>
+                </div>
+                <div class="mascot-preview">
+                    <span class="badge">Flow</span>
+                    <div class="image-frame">
+                        <img src="assets/Mascot.png" alt="Flow the NoteFlow mascot illustration">
+                    </div>
+                    <p style="color: var(--muted); font-size: 14px;">Stored locally in <code>assets/Mascot.png</code></p>
+                </div>
+            </section>
+
+            <section class="section preview" id="preview">
+                <div class="preview-grid">
+                    <div class="image-frame">
+                        <img src="assets/noteflow-screenshot.png" alt="NoteFlow workspace preview">
+                    </div>
+                    <div class="preview-copy">
+                        <p class="eyebrow">Built for clarity</p>
+                        <h2>Glass panels, structured navigation, and reliable exports</h2>
+                        <div class="checklist">
+                            <div class="check">
+                                <span class="check-icon">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3.25 7.25L5.5 9.5l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <strong>Organized hierarchies.</strong>
+                                    <p>Create deep page trees, pin key pages, and keep context with breadcrumbs.</p>
+                                </div>
+                            </div>
+                            <div class="check">
+                                <span class="check-icon">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3.25 7.25L5.5 9.5l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <strong>Slash commands & templates.</strong>
+                                    <p>Quickly insert blocks and reuse meeting notes, journals, to-do templates and more.</p>
+                                </div>
+                            </div>
+                            <div class="check">
+                                <span class="check-icon">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3.25 7.25L5.5 9.5l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <strong>Paste images & embeds.</strong>
+                                    <p>Drop screenshots or paste images; media and web embeds are supported inline.</p>
+                                </div>
+                            </div>
+                            <div class="check">
+                                <span class="check-icon">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3.25 7.25L5.5 9.5l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <div>
+                                    <strong>Backups & history.</strong>
+                                    <p>One-click JSON export, optional Google Drive backup (your credentials), and 50-state undo/redo per page.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section final-cta" id="cta">
+                <h2>Keep your notes local with NoteFlow</h2>
+                <p>Open the file, start writing, and know that everything stays with you. Ready to begin?</p>
+                <div class="cta-row" style="justify-content: center;">
+                    <a class="btn primary" href="NoteFlow.html">Get started</a>
+                    <a class="btn ghost" href="#features">Review features</a>
+                </div>
+            </section>
+            <footer style="margin-top:18px; text-align:center; color:var(--muted); font-size:13px;">
+                <p>Learn more in the <a href="README.md">README</a> or view the source on <a href="https://github.com/tanujranjith/Notion-local-saving-clone" target="_blank" rel="noopener">GitHub</a>.</p>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
