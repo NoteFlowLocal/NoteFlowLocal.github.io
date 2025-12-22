@@ -7764,6 +7764,505 @@
         }
     </script>
 
+    <!-- Small Chatbot (local-only, uses user's Groq API key) -->
+    <style>
+        .chatbot-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            /* frosted circular button similar to other UI elements */
+            background: var(--glass-01, rgba(255,255,255,0.08));
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            backdrop-filter: blur(12px) saturate(160%);
+            border: 1px solid var(--glass-border, rgba(0,0,0,0.08));
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            cursor: pointer;
+            z-index: 2200;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-btn img { width: 48px; height: 48px; border-radius: 50%; display: block; }
+
+        .chatbot-panel {
+            position: fixed;
+            bottom: 160px;
+            right: 20px;
+            width: 340px;
+            max-height: 60vh;
+            /* slightly less transparent (a tad more visible) while keeping frosted effect */
+            background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.03));
+            background-color: rgba(255,255,255,0.035);
+            -webkit-backdrop-filter: blur(14px) saturate(140%);
+            backdrop-filter: blur(14px) saturate(140%);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 12px;
+            box-shadow: 0 14px 36px rgba(0,0,0,0.28);
+            z-index: 2200;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chatbot-header {
+            display:flex; align-items:center; gap:8px; padding:10px 12px;
+            background: var(--glass-02, rgba(255,255,255,0.04));
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            backdrop-filter: blur(12px) saturate(150%);
+        }
+        .chatbot-header img { width:36px; height:36px; border-radius:8px; }
+        .chatbot-title { font-weight:600; flex:1; }
+        /* icon buttons in the header */
+        .chatbot-actions { display:flex; gap:6px; align-items:center; }
+        .chatbot-actions button {
+            width:36px; height:32px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+            background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04); color:var(--text-secondary);
+            border-radius:8px; cursor:pointer; font-weight:600; font-size:14px;
+        }
+        .chatbot-actions button:hover { background: rgba(255,255,255,0.05); color:var(--text-primary); }
+        .chatbot-actions button:focus { outline:2px solid rgba(0,0,0,0.08); }
+
+        /* fullscreen state */
+        .chatbot-panel.fullscreen {
+            top: 10px; left: 10px; right: 10px; bottom: 10px; width: auto; max-height: none; height: auto; z-index: 9999;
+            border-radius: 12px; display:flex;
+        }
+        .chatbot-panel.fullscreen .chatbot-messages { max-height: calc(100% - 160px); }
+
+        .chatbot-messages { padding:10px; overflow:auto; max-height: calc(60vh - 150px); background: transparent; }
+        .chatbot-msg { margin-bottom:8px; display:block; }
+        .chatbot-msg.user { text-align:right; }
+        .chatbot-msg .bubble { display:inline-block; padding:8px 10px; border-radius:8px; max-width:78%; }
+        .chatbot-msg.user .bubble { background: var(--accent); color: #fff; }
+    .chatbot-msg.assistant .bubble { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+
+        .chatbot-input { display:flex; gap:8px; padding:10px; border-top:1px solid rgba(255,255,255,0.03); }
+        .chatbot-input textarea { flex:1; resize:none; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--text-primary); }
+        .chatbot-input button { padding:8px 12px; border-radius:8px; border:none; background:var(--accent); color:#fff; cursor:pointer; }
+
+        .chatbot-settings { padding:10px; border-top:1px dashed rgba(255,255,255,0.04); display:flex; gap:8px; align-items:center; }
+        .chatbot-settings input { flex:1; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--text-primary); }
+        .chatbot-settings button { padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--text-primary); cursor:pointer; }
+
+        /* Info modal */
+        .chatbot-info { position: fixed; bottom: 220px; right: 380px; width: 360px; max-width: calc(100% - 40px); background-color: var(--glass-01, rgba(255,255,255,0.06));
+            -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%);
+            border:1px solid var(--glass-border, rgba(255,255,255,0.08)); border-radius:10px; padding:12px; box-shadow:0 20px 60px rgba(0,0,0,0.4); z-index:2300; display:none; }
+        .chatbot-info h4 { margin:0 0 6px 0; }
+        .chatbot-info p { margin:0 0 8px 0; color:var(--text-secondary); font-size:13px; line-height:1.4; }
+        .chatbot-info pre { background: rgba(0,0,0,0.06); padding:8px; border-radius:6px; overflow:auto; font-size:12px; }
+    .assistant-actions { margin-top:6px; display:flex; gap:6px; }
+    .assistant-actions button { padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02); color:var(--text-primary); cursor:pointer; }
+    .assistant-actions button:hover { background: rgba(255,255,255,0.035); }
+    .chatbot-disclaimer { font-size:12px; color:var(--text-secondary); padding:6px 12px; text-align:center; }
+
+        @media (max-width: 480px) {
+            .chatbot-panel { right: 12px; left: 12px; width: auto; bottom: 140px; }
+            .chatbot-info { right: 12px; left: 12px; bottom: 260px; }
+        }
+    </style>
+
+    <button class="chatbot-btn" id="chatbotBtn" title="Chat with Flow">
+        <img src="assets/Mascot.png" alt="Flow mascot" />
+    </button>
+
+    <div class="chatbot-panel" id="chatbotPanel" aria-hidden="true">
+        <div class="chatbot-header">
+            <img src="assets/Mascot.png" alt="Flow" />
+            <div class="chatbot-title">Flow — Assistant</div>
+            <div class="chatbot-actions">
+                <button id="chatInfoBtn" type="button" title="About this assistant" aria-label="About">i</button>
+                <button id="chatFullBtn" type="button" title="Expand" aria-label="Expand">⤢</button>
+                <button id="chatCloseBtn" type="button" title="Close" aria-label="Close">✕</button>
+            </div>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages"></div>
+        <div class="chatbot-disclaimer">Note: chats are not continuous. Previous messages are not sent as context to the AI to save tokens.</div>
+        <div class="chatbot-input">
+            <textarea id="chatInput" rows="2" placeholder="Ask Flow... (requires Groq API key)"></textarea>
+            <button id="chatSendBtn">Send</button>
+        </div>
+        <div class="chatbot-settings">
+            <input id="groqApiKeyInput" type="password" placeholder="Groq API key (saved locally)">
+            <button id="saveGroqKeyBtn">Save</button>
+        </div>
+    </div>
+
+    <div class="chatbot-info" id="chatbotInfo">
+        <h4>Why you need an API key</h4>
+        <p>NoteFlow is a local-first, privacy-focused app. We don't run AI servers or collect your data. To use the chat assistant, you need a free API key from <strong>Groq</strong> (a fast AI inference provider).</p>
+        <p style="margin-top:8px;"><strong>How to get your free Groq API key:</strong></p>
+        <ol style="margin:6px 0 0 18px;color:var(--text-secondary); font-size:13px; line-height:1.6;">
+            <li>Go to <a href="https://console.groq.com" target="_blank" style="color:var(--accent);">console.groq.com</a></li>
+            <li>Sign up for a free account</li>
+            <li>Navigate to API Keys and create a new key</li>
+            <li>Copy and paste your key into the field below</li>
+        </ol>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:10px;">Your API key is stored only in your browser (localStorage) and sent directly to Groq. We never see or store it.</p>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;"><button onclick="closeChatInfo()">Got it</button></div>
+    </div>
+
+    <script>
+        // Chatbot UI bindings
+        const chatbotBtn = document.getElementById('chatbotBtn');
+        const chatbotPanel = document.getElementById('chatbotPanel');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatInput = document.getElementById('chatInput');
+        const messagesEl = document.getElementById('chatbotMessages');
+    const groqApiKeyInput = document.getElementById('groqApiKeyInput');
+    const saveGroqKeyBtn = document.getElementById('saveGroqKeyBtn');
+        const chatInfoBtn = document.getElementById('chatInfoBtn');
+        const chatInfo = document.getElementById('chatbotInfo');
+
+        function loadGroqKey() {
+            const k = localStorage.getItem('groq_api_key');
+            if (k) groqApiKeyInput.value = k;
+            return k;
+        }
+
+        // model selection removed; default model chosen for reasonable cost/quality balance
+        // recommended default: 'llama-3.1-8b-instant'
+
+        function saveGroqKey() {
+            const v = groqApiKeyInput.value.trim();
+            if (v) {
+                localStorage.setItem('groq_api_key', v);
+                showToast('Groq API key saved locally');
+            } else {
+                localStorage.removeItem('groq_api_key');
+                showToast('Groq API key removed');
+            }
+        }
+
+        function toggleChat() {
+            const visible = chatbotPanel.style.display === 'flex';
+            chatbotPanel.style.display = visible ? 'none' : 'flex';
+            chatbotPanel.setAttribute('aria-hidden', visible ? 'true' : 'false');
+            if (!visible) {
+                loadGroqKey();
+                setTimeout(()=> chatInput.focus(), 120);
+            }
+        }
+
+        function openChatInfo() {
+            // Ensure info modal sits above the chat panel even when fullscreen
+            try {
+                if (chatbotPanel && chatbotPanel.classList && chatbotPanel.classList.contains('fullscreen')) {
+                    // fullscreen panel uses a very large z-index; put info above it
+                    chatInfo.style.zIndex = '10001';
+                } else {
+                    chatInfo.style.zIndex = '2300';
+                }
+            } catch (e) {
+                // fallback to default z-index if anything goes wrong
+                chatInfo.style.zIndex = '2300';
+            }
+            chatInfo.style.display = 'block';
+        }
+        function closeChatInfo() { 
+            chatInfo.style.display = 'none';
+            // reset z-index so styles revert to CSS defaults
+            chatInfo.style.zIndex = '';
+        }
+
+        // basic HTML-escaping to avoid accidental injection
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Improved light-weight markdown-ish renderer with list support
+        function renderMarkdown(md) {
+            if (!md) return '';
+            // work on a string copy
+            let s = String(md);
+            // escape HTML
+            s = escapeHtml(s);
+
+            // extract and replace code blocks first
+            const codeBlocks = [];
+            s = s.replace(/```([\s\S]*?)```/g, function(_, code) {
+                const idx = codeBlocks.length;
+                codeBlocks.push('<pre><code>' + escapeHtml(code) + '</code></pre>');
+                return `@@CODE_BLOCK_${idx}@@`;
+            });
+
+            // inline code
+            s = s.replace(/`([^`]+?)`/g, function(_, code) { return '<code>' + escapeHtml(code) + '</code>'; });
+            // bold
+            s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            // italic (avoid interfering with bold)
+            s = s.replace(/(^|[^*])\*([^*]+)\*([^*]|$)/g, function(_, a, inner, b){ return a + '<em>' + inner + '</em>' + b; });
+            // urls -> links
+            s = s.replace(/(https?:\/\/[\w\-./?=&#%+~,:;@()\[\]\$]+)/g, '<a href="$1" target="_blank" rel="noreferrer noopener">$1</a>');
+
+            // handle lists and line grouping
+            const lines = s.split(/\r?\n/);
+            let out = '';
+            let inUl = false;
+            let inOl = false;
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                const ulMatch = trimmed.match(/^[-\*]\s+(.*)$/);
+                const olMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+
+                if (ulMatch) {
+                    if (inOl) { out += '</ol>'; inOl = false; }
+                    if (!inUl) { out += '<ul>'; inUl = true; }
+                    out += '<li>' + ulMatch[1] + '</li>';
+                } else if (olMatch) {
+                    if (inUl) { out += '</ul>'; inUl = false; }
+                    if (!inOl) { out += '<ol>'; inOl = true; }
+                    out += '<li>' + olMatch[2] + '</li>';
+                } else {
+                    if (inUl) { out += '</ul>'; inUl = false; }
+                    if (inOl) { out += '</ol>'; inOl = false; }
+                    if (trimmed === '') {
+                        out += '<br>';
+                    } else {
+                        out += '<p>' + trimmed + '</p>';
+                    }
+                }
+            });
+
+            if (inUl) out += '</ul>';
+            if (inOl) out += '</ol>';
+
+            // restore code blocks
+            out = out.replace(/@@CODE_BLOCK_(\d+)@@/g, function(_, id) { return codeBlocks[Number(id)] || ''; });
+            return out;
+        }
+
+        // Conversation/history storage (for summarization and continuation)
+        const editorEl = document.getElementById('editor');
+        const MAX_HISTORY_MESSAGES = 8; // keep last N messages for context
+        let convo = [];
+
+        function saveConvo() {
+            try { localStorage.setItem('chat_history', JSON.stringify(convo)); } catch(e){}
+        }
+
+        function loadConvo() {
+            try { convo = JSON.parse(localStorage.getItem('chat_history') || '[]'); } catch(e){ convo = []; }
+        }
+
+        // Insert text into the main editor at caret (or append at end)
+        function insertIntoEditor(text) {
+            if (!editorEl) return;
+            editorEl.focus();
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                // verify selection is inside the editor
+                let node = range.commonAncestorContainer;
+                while (node && node !== editorEl) node = node.parentNode;
+                if (node === editorEl) {
+                    range.deleteContents();
+                    const frag = document.createDocumentFragment();
+                    const tmp = document.createElement('div');
+                    // render markdown to HTML for nicer insertion (renderMarkdown escapes HTML internally)
+                    tmp.innerHTML = renderMarkdown(text);
+                    let lastInserted = null;
+                    while (tmp.firstChild) {
+                        lastInserted = tmp.firstChild;
+                        frag.appendChild(lastInserted);
+                    }
+                    range.insertNode(frag);
+                    // move caret after inserted content
+                    sel.removeAllRanges();
+                    const newRange = document.createRange();
+                    if (lastInserted && lastInserted.parentNode) {
+                        newRange.setStartAfter(lastInserted);
+                    } else {
+                        newRange.setStart(range.endContainer, range.endOffset);
+                    }
+                    newRange.collapse(true);
+                    sel.addRange(newRange);
+                    return;
+                }
+            }
+            // fallback: append at end (render markdown)
+            editorEl.insertAdjacentHTML('beforeend', renderMarkdown(text));
+        }
+
+        // appendMessage now adds an insert button for assistant messages
+        function appendMessage(role, text) {
+            const wrap = document.createElement('div');
+            wrap.className = 'chatbot-msg ' + (role === 'user' ? 'user' : 'assistant');
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            if (role === 'assistant') {
+                bubble.innerHTML = renderMarkdown(text);
+                // actions: insert/copy
+                const actions = document.createElement('div');
+                actions.className = 'assistant-actions';
+                const insertBtn = document.createElement('button');
+                insertBtn.type = 'button';
+                insertBtn.textContent = 'Insert';
+                insertBtn.title = 'Insert this reply into the editor';
+                insertBtn.addEventListener('click', ()=> insertIntoEditor(text));
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.textContent = 'Copy';
+                copyBtn.title = 'Copy to clipboard';
+                copyBtn.addEventListener('click', ()=> navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : null);
+                actions.appendChild(insertBtn);
+                actions.appendChild(copyBtn);
+                wrap.appendChild(bubble);
+                wrap.appendChild(actions);
+            } else {
+                // user content kept as text to avoid injection
+                bubble.textContent = text;
+                wrap.appendChild(bubble);
+            }
+            messagesEl.appendChild(wrap);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        // Summarization removed: chats are not continuous (we do not send history to the API to save tokens)
+
+        // new element refs for fullscreen + close
+        const chatCloseBtn = document.getElementById('chatCloseBtn');
+        const chatFullBtn = document.getElementById('chatFullBtn');
+
+        async function sendChat() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            appendMessage('user', text);
+            chatInput.value = '';
+            // maintain conversation history
+            convo.push({ role: 'user', content: text });
+            saveConvo();
+            const apiKey = loadGroqKey();
+            // Use correct Groq endpoint that supports browser CORS
+            const endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+            if (!apiKey) {
+                appendMessage('assistant', 'Please save your Groq API key in the field below first.');
+                return;
+            }
+
+            appendMessage('assistant', 'Thinking...');
+            // Call Groq REST endpoint (non-streaming simple call)
+            try {
+                // pick a reasonable default model (cost-effective + useful)
+                // default: 'llama-3.1-8b-instant'
+                const selectedModel = localStorage.getItem('chat_model') || 'llama-3.1-8b-instant';
+
+                // Chats are not continuous to save tokens: send only the latest user message as context
+                let requestMessages = [{ role: 'user', content: text }];
+
+                const resp = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + apiKey
+                    },
+                    body: JSON.stringify({
+                        model: selectedModel,
+                        messages: requestMessages,
+                        temperature: 1,
+                        max_tokens: 1024,
+                        top_p: 1
+                    })
+                });
+
+                // Try to parse JSON, but gracefully handle non-JSON responses
+                let data;
+                try {
+                    data = await resp.json();
+                } catch (e) {
+                    const raw = await resp.text();
+                    data = { __raw_text: raw, __parseError: true };
+                }
+
+                // remove the temporary 'Thinking...' bubble (last assistant)
+                const bubbles = messagesEl.querySelectorAll('.chatbot-msg.assistant');
+                if (bubbles.length) bubbles[bubbles.length-1].remove();
+
+                // Helper: extract a human-friendly message from the response body
+                function extractMessage(obj) {
+                    if (!obj) return null;
+                    if (typeof obj === 'string') return obj;
+                    // common Groq/OpenAI-style error shapes
+                    if (obj.error) {
+                        if (typeof obj.error === 'string') return obj.error;
+                        if (obj.error.message) return obj.error.message;
+                        if (obj.error.detail) return obj.error.detail;
+                    }
+                    if (obj.message) return obj.message;
+                    if (obj.detail) return obj.detail;
+                    if (obj.choices && obj.choices[0]) {
+                        const c = obj.choices[0];
+                        if (c.message && c.message.content) return c.message.content;
+                        if (c.delta && c.delta.content) return c.delta.content;
+                        if (c.text) return c.text;
+                    }
+                    if (obj.__raw_text) return obj.__raw_text;
+                    try { return JSON.stringify(obj); } catch (e) { return String(obj); }
+                }
+
+                let assistantText = '';
+                if (!resp.ok) {
+                    const serverMsg = extractMessage(data) || '(no details)';
+                    assistantText = `HTTP ${resp.status} — ${serverMsg}`;
+                } else {
+                    assistantText = extractMessage(data) || '(no response)';
+                }
+
+                appendMessage('assistant', assistantText);
+                // persist assistant reply into convo
+                convo.push({ role: 'assistant', content: assistantText });
+                saveConvo();
+            } catch (err) {
+                // remove thinking bubble
+                const bubbles = messagesEl.querySelectorAll('.chatbot-msg.assistant');
+                if (bubbles.length) bubbles[bubbles.length-1].remove();
+                // Friendly guidance for common CORS/network failure
+                let msg = 'Request failed: ' + err.message;
+                if (err && err.message && err.message.toLowerCase().includes('failed to fetch')) {
+                    msg += ' — this usually indicates a network issue or a CORS block. Try running a local proxy (see the info panel \u2013 click the i button) and set the proxy URL.';
+                }
+                appendMessage('assistant', msg);
+            }
+        }
+
+        // fullscreen toggle
+        function toggleFullscreen() {
+            const isFull = chatbotPanel.classList.toggle('fullscreen');
+            if (isFull) {
+                chatFullBtn.textContent = '⤡'; // collapse icon
+            } else {
+                chatFullBtn.textContent = '⤢'; // expand icon
+            }
+            // ensure messages area scrolls to bottom
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        chatbotBtn.addEventListener('click', toggleChat);
+        chatSendBtn.addEventListener('click', sendChat);
+        saveGroqKeyBtn.addEventListener('click', saveGroqKey);
+        chatInfoBtn.addEventListener('click', openChatInfo);
+        chatCloseBtn.addEventListener('click', () => { if (chatbotPanel.classList.contains('fullscreen')) chatbotPanel.classList.remove('fullscreen'); toggleChat(); });
+        chatFullBtn.addEventListener('click', toggleFullscreen);
+        document.getElementById('groqApiKeyInput').addEventListener('keypress', (e)=>{ if(e.key==='Enter'){ saveGroqKey(); } });
+        chatInput.addEventListener('keypress', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); } });
+
+        // Initialize
+        loadGroqKey();
+        // load and render conversation history
+        loadConvo();
+        if (convo && convo.length) {
+            convo.forEach(m => appendMessage(m.role, m.content));
+        }
+    </script>
+
 </body>
 </html>
-
