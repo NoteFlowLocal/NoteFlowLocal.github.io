@@ -3819,6 +3819,25 @@
                 <option value="2.0">Spacious (2.0)</option>
             </select>
         </div>
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                <i class="fas fa-palette" style="margin-right: 5px"></i>Text Color
+            </label>
+            <select id="textColorSelectToolbar" onchange="applyTextColorFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                <option value="default">Default</option>
+                <option value="#ffffff">White</option>
+                <option value="#000000">Black</option>
+                <option value="#37352f">Dark</option>
+                <option value="#616161">Gray</option>
+                <option value="#d32f2f">Red</option>
+                <option value="#f57c00">Orange</option>
+                <option value="#fbc02d">Yellow</option>
+                <option value="#2e7d32">Green</option>
+                <option value="#1565c0">Blue</option>
+                <option value="#6a1b9a">Purple</option>
+                <option value="#c2185b">Pink</option>
+            </select>
+        </div>
         <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border);">
             <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
                 <i class="fas fa-magic"></i>Animations
@@ -6053,6 +6072,50 @@
         // Text Formatting Functions
         function formatText(command) {
             document.execCommand(command, false, null);
+        }
+
+        // Apply text color using execCommand (works on selection)
+        function applyTextColor(color) {
+            try {
+                // Use foreColor to change text color
+                document.execCommand('foreColor', false, color);
+                // Keep focus in editor after applying
+                const editor = document.getElementById('editor');
+                if (editor) editor.focus();
+            } catch (e) {
+                console.warn('applyTextColor failed', e);
+            }
+        }
+
+        // Convert rgb(...) to hex for syncing with color input
+        function rgbToHex(rgb) {
+            if (!rgb) return rgb;
+            const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+            if (!m) return rgb;
+            const r = parseInt(m[1], 10), g = parseInt(m[2], 10), b = parseInt(m[3], 10);
+            return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Handler for the preset select in the toolbar font panel
+        function applyTextColorFromToolbar() {
+            const sel = document.getElementById('textColorSelectToolbar');
+            if (!sel) return;
+            let value = sel.value;
+            if (value === 'default') {
+                // Map 'default' to the theme's text color variable
+                const root = getComputedStyle(document.documentElement);
+                const themeColor = root.getPropertyValue('--text-primary').trim() || '#000000';
+                value = themeColor;
+            }
+            applyTextColor(value);
+
+            // Sync toolbar color input if present
+            const picker = document.getElementById('textColorPicker');
+            if (picker) {
+                // If value is rgb(...) convert to hex
+                const pickVal = value.startsWith('rgb') ? rgbToHex(value) : value;
+                try { picker.value = pickVal; } catch (e) {}
+            }
         }
 
         // Emoji Picker Functions
