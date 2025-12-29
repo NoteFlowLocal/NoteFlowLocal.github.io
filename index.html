@@ -3838,6 +3838,19 @@
                 <option value="#c2185b">Pink</option>
             </select>
         </div>
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">
+                <i class="fas fa-highlighter" style="margin-right: 5px"></i>Highlight
+            </label>
+            <select id="textHighlightSelectToolbar" onchange="applyHighlightFromToolbar()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 13px;">
+                <option value="none">None</option>
+                <option value="#fff59d">Yellow</option>
+                <option value="#a5d6a7">Green</option>
+                <option value="#90caf9">Blue</option>
+                <option value="#f8bbd0">Pink</option>
+                <option value="#ffe0b2">Orange</option>
+            </select>
+        </div>
         <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid var(--border);">
             <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 5px;">
                 <i class="fas fa-magic"></i>Animations
@@ -6116,6 +6129,80 @@
                 const pickVal = value.startsWith('rgb') ? rgbToHex(value) : value;
                 try { picker.value = pickVal; } catch (e) {}
             }
+        }
+
+        // Highlight functions: apply and remove background highlight
+        function applyHighlight(color) {
+            const editor = document.getElementById('editor');
+            if (!editor) return;
+            editor.focus();
+
+            // If 'none' requested, remove highlight from selection
+            if (!color || color === 'none') {
+                const sel = window.getSelection();
+                if (!sel || !sel.rangeCount) return;
+                for (let i = 0; i < sel.rangeCount; i++) {
+                    removeHighlightInRange(sel.getRangeAt(i));
+                }
+                return;
+            }
+
+            try {
+                // Prefer hiliteColor; fall back to backColor on some browsers
+                const ok = document.execCommand('hiliteColor', false, color);
+                if (!ok) document.execCommand('backColor', false, color);
+                // keep focus
+                editor.focus();
+            } catch (e) {
+                // Fallback: wrap selection with a span
+                const sel = window.getSelection();
+                if (!sel || !sel.rangeCount) return;
+                const range = sel.getRangeAt(0);
+                if (range.collapsed) return;
+                const span = document.createElement('span');
+                span.style.backgroundColor = color;
+                try {
+                    range.surroundContents(span);
+                } catch (err) {
+                    // If surroundContents fails (partially selected nodes), use safer approach
+                    const frag = range.extractContents();
+                    span.appendChild(frag);
+                    range.insertNode(span);
+                }
+                // collapse selection after inserted span
+                sel.removeAllRanges();
+                const r = document.createRange();
+                r.setStartAfter(span);
+                r.collapse(true);
+                sel.addRange(r);
+            }
+        }
+
+        function removeHighlightInRange(range) {
+            const common = range.commonAncestorContainer;
+            const root = common.nodeType === 1 ? common : common.parentElement;
+            if (!root) return;
+            const nodes = root.querySelectorAll('*');
+            nodes.forEach(el => {
+                if (range.intersectsNode(el)) {
+                    if (el.style && el.style.backgroundColor) {
+                        el.style.backgroundColor = '';
+                        if (!el.getAttribute('style')) el.removeAttribute('style');
+                        // unwrap empty spans
+                        if (el.tagName === 'SPAN' && el.attributes.length === 0) {
+                            while (el.firstChild) el.parentNode.insertBefore(el.firstChild, el);
+                            el.parentNode.removeChild(el);
+                        }
+                    }
+                }
+            });
+        }
+
+        function applyHighlightFromToolbar() {
+            const sel = document.getElementById('textHighlightSelectToolbar');
+            if (!sel) return;
+            const value = sel.value;
+            applyHighlight(value === 'none' ? 'none' : value);
         }
 
         // Emoji Picker Functions
